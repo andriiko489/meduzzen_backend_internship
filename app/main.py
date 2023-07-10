@@ -5,10 +5,7 @@ from fastapi import FastAPI
 from app.utils import config
 
 app = FastAPI()
-
-@lru_cache()
-def get_settings():
-    return config.Settings()
+settings = config.Settings()
 
 @app.get("/")
 def health_check():
@@ -19,4 +16,4 @@ def health_check():
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host=get_settings().host, port=get_settings().port)
+    uvicorn.run(app, host=settings.host, port=settings.port)
