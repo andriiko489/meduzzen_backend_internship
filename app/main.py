@@ -1,11 +1,14 @@
+from functools import lru_cache
 import uvicorn
 from fastapi import FastAPI
 
-from app.utils.get_config import get_config
+from app.utils import config
 
-config_env = get_config()
 app = FastAPI()
 
+@lru_cache()
+def get_settings():
+    return config.Settings()
 
 @app.get("/")
 def health_check():
@@ -16,4 +19,4 @@ def health_check():
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host=config_env["HOST"], port=int(config_env["PORT"]))
+    uvicorn.run(app, host=get_settings().host, port=get_settings().port)
