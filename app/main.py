@@ -6,7 +6,6 @@ config_env = get_config()
 app = FastAPI()
 
 
-# print(config_env)
 @app.get("/")
 def health_check():
     return {"status_code": 200,
