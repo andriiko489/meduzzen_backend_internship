@@ -1,11 +1,9 @@
-from functools import lru_cache
 import uvicorn
 from fastapi import FastAPI
 
-from app.utils import config
+from app.utils.config import settings
 
 app = FastAPI()
-settings = config.Settings()
 
 @app.get("/")
 def health_check():
