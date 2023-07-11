@@ -5,6 +5,7 @@ from app.utils.config import settings
 
 app = FastAPI()
 
+
 @app.get("/")
 def health_check():
     return {"status_code": 200,
