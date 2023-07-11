@@ -1,3 +1,6 @@
 fastapi~=0.100.0
 pydantic_settings
 uvicorn
+httpx
+python-dotenv
+pytest
