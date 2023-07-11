@@ -6,5 +6,5 @@ Python 3.10
 git clone https://github.com/andriiko489/meduzzen_backend_internship
 cd meduzzen_backend_internship
 pip install -r requirements.txt
-python.exe -m uvicorn app.main:app --reload
+python app/main.py
 ```
