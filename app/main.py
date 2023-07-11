@@ -1,9 +1,10 @@
 import uvicorn
 from fastapi import FastAPI
 
-from app.utils.config import settings
+from utils.config import settings
 
 app = FastAPI()
+
 
 @app.get("/")
 def health_check():
