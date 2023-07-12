@@ -1,0 +1,25 @@
+version: "3"
+
+services:
+  fastapi:
+    image: fast-api-stations
+    ports:
+      - "8000:80"
+    depends_on:
+      pgdb:
+        condition: service_healthy
+  pgdb:
+    image: postgis/postgis
+    environment:
+      POSTGRES_USER: jkaub
+      POSTGRES_PASSWORD: jkaub
+      POSTGRES_DB: stations
+      PGDATA: /var/lib/postgresql/data/some_name/
+    volumes:
+      - ./db:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready", "-d", "db_prod" ]
+      interval: 30s
+      timeout: 60s
+      retries: 5
+      start_period: 80s

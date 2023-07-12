@@ -2,7 +2,43 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+import sqlalchemy
+import databases
+
+from pydantic import BaseModel
 from utils.config import settings
+
+# SQLAlchemy specific code, as with any other app
+DATABASE_URL = 'postgresql://jkaub:jkaub@pgdb/stations'
+
+database = databases.Database(DATABASE_URL)
+
+metadata = sqlalchemy.MetaData()
+
+notes = sqlalchemy.Table(
+    "notes",
+    metadata,
+    sqlalchemy.Column("id", sqlalchemy.Integer, primary_key=True),
+    sqlalchemy.Column("text", sqlalchemy.String),
+    sqlalchemy.Column("completed", sqlalchemy.Boolean),
+)
+
+
+engine = sqlalchemy.create_engine(
+    DATABASE_URL
+)
+metadata.create_all(engine)
+
+
+class NoteIn(BaseModel):
+    text: str
+    completed: bool
+
+
+class Note(BaseModel):
+    id: int
+    text: str
+    completed: bool
 
 app = FastAPI()
 
