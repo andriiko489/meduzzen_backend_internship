@@ -6,7 +6,6 @@ httpx
 python-dotenv
 pytest
 SQLAlchemy~=1.4
-databases~=0.7.0
 psycopg2
 asyncpg
 redis~=4.6.0

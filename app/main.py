@@ -3,7 +3,6 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 import sqlalchemy
-import databases
 
 from pydantic import BaseModel
 from utils.config import settings
@@ -20,8 +19,6 @@ loop = asyncio.get_event_loop()
 loop.run_until_complete(connect_redis())
 # SQLAlchemy specific code, as with any other app
 DATABASE_URL = 'postgresql://jkaub:jkaub@pgdb/stations'
-
-database = databases.Database(DATABASE_URL)
 
 metadata = sqlalchemy.MetaData()
 
