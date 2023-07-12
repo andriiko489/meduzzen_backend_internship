@@ -1,8 +1,3 @@
-/.idea/.gitignore
-/.idea/meduzzen_backend_internship.iml
-/.idea/misc.xml
-/.idea/modules.xml
-/.idea/inspectionProfiles/profiles_settings.xml
-/.idea/vcs.xml
-
+/.idea/
 .env
+/db/
