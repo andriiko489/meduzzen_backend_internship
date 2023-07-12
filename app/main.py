@@ -8,10 +8,16 @@ import databases
 from pydantic import BaseModel
 from utils.config import settings
 
-import aioredis
+import redis.asyncio as redis
+import asyncio
+import nest_asyncio
+nest_asyncio.apply()
+async def connect_redis():
+    await redis.from_url("redis://localhost")
 
-redis = aioredis.from_url('redis://localhost:6379')
 
+loop = asyncio.get_event_loop()
+loop.run_until_complete(connect_redis())
 # SQLAlchemy specific code, as with any other app
 DATABASE_URL = 'postgresql://jkaub:jkaub@pgdb/stations'
 
@@ -26,7 +32,6 @@ notes = sqlalchemy.Table(
     sqlalchemy.Column("text", sqlalchemy.String),
     sqlalchemy.Column("completed", sqlalchemy.Boolean),
 )
-
 
 engine = sqlalchemy.create_engine(
     DATABASE_URL
@@ -43,6 +48,7 @@ class Note(BaseModel):
     id: int
     text: str
     completed: bool
+
 
 app = FastAPI()
 
