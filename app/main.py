@@ -10,9 +10,12 @@ from utils.config import settings
 import redis.asyncio as redis
 import asyncio
 import nest_asyncio
+
 nest_asyncio.apply()
+
+
 async def connect_redis():
-    await redis.from_url("redis://localhost")
+    await redis.from_url("redis://redis:6379")
 
 
 loop = asyncio.get_event_loop()
@@ -41,10 +44,8 @@ class NoteIn(BaseModel):
     completed: bool
 
 
-class Note(BaseModel):
+class Note(NoteIn):
     id: int
-    text: str
-    completed: bool
 
 
 app = FastAPI()
