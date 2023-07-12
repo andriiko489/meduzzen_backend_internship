@@ -2,12 +2,14 @@ version: "3"
 
 services:
   fastapi:
-    image: fast-api-stations
+    image: app
     ports:
       - "8000:80"
     depends_on:
       pgdb:
         condition: service_healthy
+    networks:
+      - app-tier
   pgdb:
     image: postgis/postgis
     environment:
@@ -15,6 +17,8 @@ services:
       POSTGRES_PASSWORD: jkaub
       POSTGRES_DB: stations
       PGDATA: /var/lib/postgresql/data/some_name/
+    networks:
+      - app-tier
     volumes:
       - ./db:/var/lib/postgresql/data
     healthcheck:
@@ -23,3 +27,12 @@ services:
       timeout: 60s
       retries: 5
       start_period: 80s
+  redis:
+    image: redis
+    ports:
+      - 6379
+    networks:
+      - app-tier
+networks:
+  app-tier:
+    driver: bridge

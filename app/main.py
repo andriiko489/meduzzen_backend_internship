@@ -8,6 +8,10 @@ import databases
 from pydantic import BaseModel
 from utils.config import settings
 
+import aioredis
+
+redis = aioredis.from_url('redis://localhost:6379')
+
 # SQLAlchemy specific code, as with any other app
 DATABASE_URL = 'postgresql://jkaub:jkaub@pgdb/stations'
 
