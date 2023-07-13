@@ -1,16 +1,15 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pathlib import Path
+import dotenv
 
-postfix = "/.env"
-path = Path(str(Path().absolute()) + postfix)  # This peace of code needed for run configurations and Current file in
-while not path.is_file():                         # Pycharm
-    path = Path(str(path.parent.parent) + postfix)
-print(path)
+found_dotenv = dotenv.find_dotenv('.env')
+
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=path)
+    print(found_dotenv)
+    model_config = SettingsConfigDict(env_file=found_dotenv)
     host: str
     port: int
+    database_url: str
 
 
 settings = Settings()

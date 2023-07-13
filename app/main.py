@@ -4,6 +4,9 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from utils.config import settings
 
+from db.connect_to_redis import r as redis
+import db.connect_to_pgdb
+
 app = FastAPI()
 
 origins = [
