@@ -1,13 +1,16 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pathlib import Path
 
-path = str(Path().absolute().parent) + "\.env"  # path to env file
+path = Path(str(Path().absolute()) + "/.env")  # This peace of code needed for run configurations and Current file in
+if not path.is_file():                         # Pycharm
+    path = Path(str(path.parent.parent) + "/.env")
 
 
 class Settings(BaseSettings):
-    host: str = "0.0.0.0"
-    port: int = 8000
-    model_config = SettingsConfigDict(env_file=path, extra="allow")
+    model_config = SettingsConfigDict(env_file=str(path))
+    print(model_config)
+    host: str
+    port: int
 
 
 settings = Settings()
