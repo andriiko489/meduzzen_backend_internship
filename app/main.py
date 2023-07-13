@@ -21,7 +21,6 @@ async def connect_redis():
 loop = asyncio.get_event_loop()
 loop.run_until_complete(connect_redis())
 # SQLAlchemy specific code, as with any other app
-DATABASE_URL = 'postgresql://jkaub:jkaub@pgdb/stations'
 
 metadata = sqlalchemy.MetaData()
 
@@ -34,7 +33,7 @@ notes = sqlalchemy.Table(
 )
 
 engine = sqlalchemy.create_engine(
-    DATABASE_URL
+    settings.database_url
 )
 metadata.create_all(engine)
 
