@@ -1,28 +1,14 @@
-import sqlalchemy
-from pydantic import BaseModel
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy.orm import sessionmaker
 
 from utils.config import settings
 
-metadata = sqlalchemy.MetaData()
 
-notes = sqlalchemy.Table(
-    "notes",
-    metadata,
-    sqlalchemy.Column("id", sqlalchemy.Integer, primary_key=True),
-    sqlalchemy.Column("text", sqlalchemy.String),
-    sqlalchemy.Column("completed", sqlalchemy.Boolean),
+
+engine = create_async_engine(settings.database_url, echo=True)
+Base = declarative_base()
+async_session = sessionmaker(
+    engine, class_=AsyncSession, expire_on_commit=False
 )
-
-engine = sqlalchemy.create_engine(
-    settings.database_url
-)
-metadata.create_all(engine)
-
-
-class NoteIn(BaseModel):
-    text: str
-    completed: bool
-
-
-class Note(NoteIn):
-    id: int
