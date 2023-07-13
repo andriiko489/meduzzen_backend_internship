@@ -8,7 +8,6 @@ if not path.is_file():                         # Pycharm
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=str(path))
-    print(model_config)
     host: str
     port: int
 
