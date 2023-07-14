@@ -40,6 +40,16 @@ def health_check():
             "result": "working"
             }
 
+@app.get("/all/")
+def health_check():
+    logger.info("Someone want list of all users")
+    print(crud.users())
+    return {"status_code": 200}
+    # return {"status_code": 200,
+    #         "detail": "ok",
+    #         "result": "working"
+    #         }
+
 
 if __name__ == "__main__":
     logger.info("Starting...")
