@@ -7,6 +7,10 @@ COPY ./requirements.txt /code/requirements.txt
 COPY ./.env.sampl[e] /code/.env.sample
 
 COPY ./.en[v] /code/.env
+
+COPY ./alembic/ /code/alembic/
+
+COPY ./alembic.ini /code/alembic.ini
 #add checking of exitsting
 
 RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
