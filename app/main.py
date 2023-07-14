@@ -7,8 +7,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from utils.config import settings
 
-# from db.connect_to_redis import r as redis
-# import db.connect_to_pgdb
+from db.connect_to_redis import r as redis
+import db.connect_to_pgdb
 
 # get root logger
 logging.basicConfig(filename="logs.txt", level=logging.DEBUG, filemode="w")
