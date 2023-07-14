@@ -29,6 +29,9 @@ docker-compose up
 # Як запустити тести
 В терміналі контейнера `app` виконати наступну команду
 `python -m pytest`
+# Як створити міграції
+В терміналі контейнера `app` виконати наступну команду
+`alembic revision --autogenerate -m "Added user table"`
 # Як виконати міграції
 В терміналі контейнера `app` виконати наступну команду
 `alembic upgrade head`
