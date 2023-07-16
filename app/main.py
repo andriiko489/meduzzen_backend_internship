@@ -1,14 +1,17 @@
 import logging
 import logging.config
-
+import json
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from schemas.schemas import SignUpUser
 from utils.config import settings
 
+from db import crud
 from db.connect_to_redis import r as redis
-import db.connect_to_pgdb
+from db.connect_to_pgdb import async_session, engine
 
 # get root logger
 logging.basicConfig(filename="logs.txt", level=logging.DEBUG, filemode="w")
@@ -39,17 +42,25 @@ def health_check():
             "detail": "ok",
             "result": "working"
             }
-
+#INSERT INTO users(id, username, email, hashed_password, is_active) VALUES (2, 'andriiko489', 'email', 'hash', True);
 @app.get("/all/")
-def health_check():
+async def get_users():
     logger.info("Someone want list of all users")
-    print(crud.users())
-    return {"status_code": 200}
-    # return {"status_code": 200,
-    #         "detail": "ok",
-    #         "result": "working"
-    #         }
+    r = await crud.get_users(AsyncSession(engine))
+    return r
 
+@app.get("/get_user/{id}")
+async def get_user(id: int):
+    r = await crud.get_user(AsyncSession(engine), id)
+    return r
+
+@app.post("/add_user")
+async def sign_up_user(user: SignUpUser):
+    try:
+        r = await crud.add_user(AsyncSession(engine), user)
+        return r
+    except Exception as e:
+        return e
 
 if __name__ == "__main__":
     logger.info("Starting...")

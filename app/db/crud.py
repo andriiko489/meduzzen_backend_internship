@@ -1,15 +1,21 @@
-from sqlalchemy.orm import Session
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from schemas import models, schemas
 
 
-def get_users(db: Session):
-    return db.query(models.User).all()
+async def get_users(session: AsyncSession) -> list[models.User]:
+    result = await session.execute(select(models.User))
+    return result.scalars().all()
 
-def sign_up_user(db: Session, user: schemas.SignUpUser):
-    fake_hashed_password = user.password + "notreallyhashed"
-    db_user = models.User(email=user.email, hashed_password=fake_hashed_password)
-    db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
-    return db_user
+
+async def get_user(session: AsyncSession, id: int) -> models.User:
+    results = await session.execute(f"SELECT * FROM users WHERE id={id}")
+    return results.first()
+
+async def add_user(session: AsyncSession, user: schemas.User) -> list[models.User]:
+    db_user = models.User(username=user.username, email=user.email, hashed_password=user.hashed_password)
+    await session.commit()
+    await session.refresh(db_user)
+    result = await session.execute(select(models.User))
+    return result.scalars().all()
