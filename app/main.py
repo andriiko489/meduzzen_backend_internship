@@ -6,6 +6,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from db.crud import BaseCRUD
+from schemas import models, schemas
 from schemas.schemas import SignUpUser, UpdateUser
 from utils.config import settings
 
@@ -42,34 +44,35 @@ def health_check():
             "detail": "ok",
             "result": "working"
             }
-#INSERT INTO users(id, username, email, hashed_password, is_active) VALUES (2, 'andriiko489', 'email', 'hash', True);
+
+
 @app.get("/all/")
 async def get_users():
     logger.info("Someone want list of all users")
-    r = await crud.get_users(AsyncSession(engine))
+    r = await BaseCRUD(models.User, schemas.User).get_all(AsyncSession(engine))
     return r
 
 @app.get("/get_user/{id}")
 async def get_user(id: int):
-    r = await crud.get_user(AsyncSession(engine), id)
+    r = await BaseCRUD(models.User, schemas.User).get(AsyncSession(engine), id)
     return r
 
 @app.post("/add_user")
 async def sign_up_user(user: SignUpUser):
     try:
-        r = await crud.add_user(AsyncSession(engine), user)
+        r = await BaseCRUD(models.User, schemas.User).add(AsyncSession(engine), user)
         return r
     except Exception as e:
         return e
 
 @app.patch("/update_user")
 async def update_user(user: UpdateUser):
-    r = await crud.update_user(AsyncSession(engine), user)
+    r = await BaseCRUD(models.User, schemas.User).update(AsyncSession(engine), user)
     return r
 
 @app.delete("/delete_user")
-async def delete_user(user_id: int):
-    r = await crud.delete_user(AsyncSession(engine), user_id)
+async def delete_user(id: int):
+    r = await BaseCRUD(models.User, schemas.User).delete(AsyncSession(engine), id)
     return r
 
 if __name__ == "__main__":

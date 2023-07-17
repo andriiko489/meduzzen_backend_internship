@@ -9,6 +9,7 @@ class User(BaseModel):
     username: str
     hashed_password: str
     email: str
+    is_active: bool
 
 
 class SignInUser(BaseModel):
@@ -25,6 +26,7 @@ class UpdateUser(BaseModel):
     username: Optional[str] = None
     hashed_password: Optional[str] = None
     email: Optional[str] = None
+    is_active: Optional[bool] = None
 
 
 class UserList(BaseModel):
