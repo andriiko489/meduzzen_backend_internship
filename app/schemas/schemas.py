@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Optional
+
 from pydantic import BaseModel
 
 
@@ -18,10 +20,11 @@ class SignUpUser(User):
     pass
 
 
-class UserUpdate(BaseModel):
-    username: str | None
-    hashed_password: str | None
-    email: str | None
+class UpdateUser(BaseModel):
+    id: int
+    username: Optional[str] = None
+    hashed_password: Optional[str] = None
+    email: Optional[str] = None
 
 
 class UserList(BaseModel):

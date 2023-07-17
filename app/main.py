@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from schemas.schemas import SignUpUser
+from schemas.schemas import SignUpUser, UpdateUser
 from utils.config import settings
 
 from db import crud
@@ -61,6 +61,16 @@ async def sign_up_user(user: SignUpUser):
         return r
     except Exception as e:
         return e
+
+@app.patch("/update_user")
+async def update_user(user: UpdateUser):
+    r = await crud.update_user(AsyncSession(engine), user)
+    return r
+
+@app.delete("/delete_user")
+async def delete_user(user_id: int):
+    r = await crud.delete_user(AsyncSession(engine), user_id)
+    return r
 
 if __name__ == "__main__":
     logger.info("Starting...")
