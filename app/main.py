@@ -1,19 +1,17 @@
-import logging
 import logging.config
-import json
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from db.crud import BaseCRUD
+from crud.BaseCRUD import BaseCRUD
+from crud.UserCRUD import UserCRUD
 from schemas import models, schemas
 from schemas.schemas import SignUpUser, UpdateUser
 from utils.config import settings
 
-from db import crud
-from db.connect_to_redis import r as redis
-from db.connect_to_pgdb import async_session, engine
+# TODO: throw this import to base crud
+from db.connect_to_pgdb import engine
 
 # get root logger
 logging.basicConfig(filename="logs.txt", level=logging.DEBUG, filemode="w")
@@ -49,12 +47,13 @@ def health_check():
 @app.get("/all/")
 async def get_users():
     logger.info("Someone want list of all users")
-    r = await BaseCRUD(models.User, schemas.User).get_all(AsyncSession(engine))
+    r = await UserCRUD().get_users(AsyncSession(engine))
     return r
 
 @app.get("/get_user/{id}")
 async def get_user(id: int):
-    r = await BaseCRUD(models.User, schemas.User).get(AsyncSession(engine), id)
+    #r = await BaseCRUD(models.User, schemas.User).get(AsyncSession(engine), id)
+    r = await UserCRUD().get_user(AsyncSession(engine), id)
     return r
 
 @app.post("/add_user")
