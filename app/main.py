@@ -55,19 +55,19 @@ async def get_user(id: int):
 @app.post("/add_user")
 async def sign_up_user(user: SignUpUser):
     try:
-        r = await BaseCRUD(models.User, schemas.User).add(user)
+        r = await UserCRUD().add(user)
         return r
     except Exception as e:
         return e
 
 @app.patch("/update_user")
 async def update_user(user: UpdateUser):
-    r = await BaseCRUD(models.User, schemas.User).update(user)
+    r = await UserCRUD().update(user)
     return r
 
 @app.delete("/delete_user")
 async def delete_user(id: int):
-    r = await BaseCRUD(models.User, schemas.User).delete(id)
+    r = await UserCRUD().delete(id)
     return r
 
 if __name__ == "__main__":
