@@ -3,7 +3,7 @@ from sqlalchemy import select
 
 from crud.BaseCRUD import BaseCRUD, session
 from schemas import models, schemas
-from utils.hash import Hasher
+from services.auth import Hasher
 
 
 class UserCRUD(BaseCRUD):
