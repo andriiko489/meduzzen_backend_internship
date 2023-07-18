@@ -1,4 +1,7 @@
-from crud.BaseCRUD import BaseCRUD
+from fastapi import HTTPException
+from sqlalchemy import select
+
+from crud.BaseCRUD import BaseCRUD, session
 from schemas import models, schemas
 from utils.hash import Hasher
 
@@ -10,6 +13,12 @@ class UserCRUD(BaseCRUD):
     async def get_user(self, user_id: int):
         return await super().get(user_id)
 
+    async def get_by_username(self, username: str):
+        stmt = select(self.model).where(self.model.username == username)
+        item = (await session.execute(stmt)).scalars().first()
+        if not item:
+            raise HTTPException(status_code=404, detail="User not found")
+        return item
     async def get_users(self):
         return await super().get_all()
 
