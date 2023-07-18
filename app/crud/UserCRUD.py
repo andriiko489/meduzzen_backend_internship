@@ -22,3 +22,6 @@ class UserCRUD(BaseCRUD):
 
     async def delete(self, user_id: int):
         return await super().delete(user_id)
+
+
+user_crud = UserCRUD()
