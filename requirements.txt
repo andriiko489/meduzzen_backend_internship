@@ -11,3 +11,4 @@ asyncpg
 redis~=4.6.0
 nest-asyncio
 alembic
+passlib[bcrypt]

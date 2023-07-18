@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import Optional
+
 from pydantic import BaseModel
 
 
@@ -5,6 +9,7 @@ class User(BaseModel):
     username: str
     hashed_password: str
     email: str
+    is_active: bool
 
 
 class SignInUser(BaseModel):
@@ -16,10 +21,12 @@ class SignUpUser(User):
     pass
 
 
-class UserUpdate(BaseModel):
-    username: str | None
-    hashed_password: str | None
-    email: str | None
+class UpdateUser(BaseModel):
+    id: int
+    username: Optional[str] = None
+    hashed_password: Optional[str] = None
+    email: Optional[str] = None
+    is_active: Optional[bool] = None
 
 
 class UserList(BaseModel):
