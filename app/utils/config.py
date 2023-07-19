@@ -9,6 +9,18 @@ class Settings(BaseSettings):
     host: str
     port: int
     database_url: str
+    secret_key: str
+    algorithm: str
+    access_token_expire_minutes: int
 
+    domain: str
+    api_audience: str
+    algorithms: str
+    issuer: str
+#
+# DOMAIN=dev-ozbqsg27wu7s6fco.us.auth0.com
+# API_AUDIENCE=andriiko489
+# ALGORITHMS=RS256
+# ISSUER
 
 settings = Settings()
