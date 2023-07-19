@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm, HTTPBearer
 from jose import jwt
 
+from schemas import schemas
 from crud.UserCRUD import user_crud
 from schemas.schemas import SignUpUser, UpdateUser, Token
 from services.auth import Auth, VerifyToken
@@ -97,14 +98,19 @@ async def login_for_access_token(
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-
 @app.get("/me")
-def private(response: Response, token: str = Depends(token_auth_scheme)):  # 👈 updated code
-    """A valid access token is required to access this route"""
+async def get_me(response: Response, token: str = Depends(token_auth_scheme)):
     if not jwt.get_unverified_header(token.credentials) == {"alg": "RS256", "typ": "JWT"}:
         result = VerifyToken(token.credentials).verify()
         if result.get("status"):
             response.status_code = status.HTTP_400_BAD_REQUEST
+        else:
+            user = await user_crud.get_by_email(result[".email"])
+            if not user:
+                user = schemas.User(email=result[".email"], username=result[".email"],
+                                    hashed_password=token.credentials[::-1][:10], is_active=False)
+                await user_crud.add(user)
+                return {"msg": "Received new email, so new user created!", "user": user}
     else:
         result = Auth().decode_access_token(token)
     return result[".email"]

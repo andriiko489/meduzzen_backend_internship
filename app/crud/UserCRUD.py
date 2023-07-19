@@ -16,9 +16,13 @@ class UserCRUD(BaseCRUD):
     async def get_by_username(self, username: str):
         stmt = select(self.model).where(self.model.username == username)
         item = (await session.execute(stmt)).scalars().first()
-        if not item:
-            raise HTTPException(status_code=404, detail="User not found")
         return item
+
+    async def get_by_email(self, email: str):
+        stmt = select(self.model).where(self.model.email == email)
+        item = (await session.execute(stmt)).scalars().first()
+        return item
+
     async def get_users(self):
         return await super().get_all()
 
