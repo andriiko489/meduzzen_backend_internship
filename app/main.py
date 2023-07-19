@@ -92,7 +92,7 @@ async def login_for_access_token(
         )
     access_token_expires = timedelta(minutes=settings.access_token_expire_minutes)
     access_token = Auth.create_access_token(
-        data={"sub": user.username}, expires_delta=access_token_expires
+        data={"sub": user.username, ".email": user.email}, expires_delta=access_token_expires
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
@@ -116,9 +116,9 @@ def private(response: Response, token: str = Depends(token_auth_scheme)):  # ðŸ‘
         result = VerifyToken(token.credentials).verify()
         if result.get("status"):
             response.status_code = status.HTTP_400_BAD_REQUEST
-        return result
     else:
-        return Auth().decode_access_token(token)
+        result = Auth().decode_access_token(token)
+    return result[".email"]
 
 
 if __name__ == "__main__":
