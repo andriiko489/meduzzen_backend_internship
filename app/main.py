@@ -6,6 +6,7 @@ import uvicorn
 from fastapi import FastAPI, Depends, HTTPException, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm, HTTPBearer
+from jose import jwt
 
 from crud.UserCRUD import user_crud
 from schemas.schemas import SignUpUser, UpdateUser, Token
@@ -111,17 +112,13 @@ def public():
 @app.get("/api/private")
 def private(response: Response, token: str = Depends(token_auth_scheme)):  # 👈 updated code
     """A valid access token is required to access this route"""
-    print(1)
-    result = VerifyToken(token.credentials).verify()  # 👈 updated code
-    print(2)
-    print(result)
-    # 👇 new code
-    if result.get("status"):
-        response.status_code = status.HTTP_400_BAD_REQUEST
+    if not jwt.get_unverified_header(token.credentials) == {"alg": "RS256", "typ": "JWT"}:
+        result = VerifyToken(token.credentials).verify()
+        if result.get("status"):
+            response.status_code = status.HTTP_400_BAD_REQUEST
         return result
-    # 👆 new codes
-    print(3)
-    return result
+    else:
+        return Auth().decode_access_token(token)
 
 
 if __name__ == "__main__":

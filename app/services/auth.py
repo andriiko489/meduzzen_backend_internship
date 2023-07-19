@@ -1,22 +1,19 @@
 from __future__ import annotations
 
 from datetime import timedelta, datetime
-import jwt
 
-from crud.UserCRUD import user_crud
+from jose.jwt import encode, decode
+from jwt import exceptions
+
+from jose import jwt
+from jwt.jwks_client import PyJWKClient
+
 from services.hasher import Hasher
 from utils.config import settings
+from crud.UserCRUD import UserCRUD
 
-
+import traceback
 class Auth:
-    async def authenticate_user(username: str, password: str):
-        user = await user_crud.get_by_username(username)
-        if not user:
-            return False
-        if not Hasher.verify_password(password, user.hashed_password):
-            return False
-        return user
-
     def create_access_token(data: dict, expires_delta: timedelta | None = None):
         to_encode = data.copy()
         if expires_delta:
@@ -24,8 +21,24 @@ class Auth:
         else:
             expire = datetime.utcnow() + timedelta(minutes=15)
         to_encode.update({"exp": expire})
-        encoded_jwt = jwt.encode(to_encode, settings.secret_key, algorithm=settings.algorithm)
+        encoded_jwt = encode(to_encode, settings.secret_key,
+                             algorithm=settings.algorithm)
         return encoded_jwt
+
+    async def authenticate_user(username: str, password: str):
+        user = await UserCRUD().get_by_username(username)
+        if not user:
+            return False
+        if not Hasher.verify_password(password, user.hashed_password):
+            return False
+        return user
+
+    @staticmethod
+    def decode_access_token(token):
+        decoded = jwt.decode(token.credentials, settings.secret_key, algorithms=settings.algorithm)
+        return decoded
+
+
 
 
 class VerifyToken:
@@ -37,7 +50,7 @@ class VerifyToken:
         # This gets the JWKS from a given URL and does processing so you can
         # use any of the keys available
         jwks_url = f'https://{settings.domain}/.well-known/jwks.json'
-        self.jwks_client = jwt.PyJWKClient(jwks_url)
+        self.jwks_client = PyJWKClient(jwks_url)
 
     def verify(self):
         # This gets the 'kid' from the passed token
@@ -45,18 +58,18 @@ class VerifyToken:
             self.signing_key = self.jwks_client.get_signing_key_from_jwt(
                 self.token
             ).key
-        except jwt.exceptions.PyJWKClientError as error:
+        except exceptions.PyJWKClientError as error:
             return {"status": "error", "msg": error.__str__()}
-        except jwt.exceptions.DecodeError as error:
+        except exceptions.DecodeError as error:
             return {"status": "error", "msg": error.__str__()}
 
         try:
-            payload = jwt.decode(
+            payload = decode(
                 self.token,
                 self.signing_key,
                 algorithms=settings.algorithms,
                 audience=settings.api_audience,
-                issuer=settings.issuer,
+                issuer=settings.issuer
             )
         except Exception as e:
             return {"status": "error", "message": str(e)}
