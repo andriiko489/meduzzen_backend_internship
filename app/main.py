@@ -97,19 +97,8 @@ async def login_for_access_token(
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-@app.get("/api/public")
-def public():
-    """No access token required to access this route"""
 
-    result = {
-        "status": "success",
-        "msg": ("Hello from a public endpoint! You don't need to be "
-                "authenticated to see this.")
-    }
-    return result
-
-
-@app.get("/api/private")
+@app.get("/me")
 def private(response: Response, token: str = Depends(token_auth_scheme)):  # 👈 updated code
     """A valid access token is required to access this route"""
     if not jwt.get_unverified_header(token.credentials) == {"alg": "RS256", "typ": "JWT"}:
