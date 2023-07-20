@@ -33,8 +33,6 @@ class BaseCRUD(Generic[T]):
 
     async def get(self, item_id: int):
         item = await self.session.get(self.model, item_id)
-        if not item:
-            raise HTTPException(status_code=404, detail="User not found")
         return item
 
     async def get_all(self):
@@ -46,26 +44,35 @@ class BaseCRUD(Generic[T]):
         for column in self.get_columns():
             d[column] = eval(f"item.{column}")
         db_item = self.model(**d)
-        self.session.add(db_item)
-        print(db_item)
-        await self.session.commit()
-        await self.session.refresh(db_item)
+        try:
+            self.session.add(db_item)
+            await self.session.commit()
+            await self.session.refresh(db_item)
+        except:
+            await self.session.rollback()
+            db_item = None
         return db_item
 
     async def update(self, item):
         db_item = await self.get(item.id)
 
         columns = self.get_columns()
-
-        for column in columns:
-            exec(f"db_item.{column} = return_if_not_empty(item.{column}, db_item.{column})")
-
-        await self.session.commit()
-        await self.session.refresh(db_item)
-        return await self.get(item.id)
+        try:
+            for column in columns:
+                exec(f"db_item.{column} = return_if_not_empty(item.{column}, db_item.{column})")
+            await self.session.commit()
+            await self.session.refresh(db_item)
+        except:
+            await self.session.rollback()
+            item = None
+        return item
 
     async def delete(self, id: int):
         item = await self.get(id)
-        await self.session.delete(item)
-        await self.session.commit()
-        return {"status": 202}
+        try:
+            await self.session.delete(item)
+            await self.session.commit()
+        except:
+            await self.session.rollback()
+            item = None
+        return item

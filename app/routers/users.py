@@ -3,18 +3,15 @@ from fastapi import APIRouter
 from datetime import timedelta
 from typing import Annotated
 
-from fastapi import Depends, HTTPException, Response, status
-from fastapi.security import OAuth2PasswordRequestForm, HTTPBearer
-from jose import jwt
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm
 
 from schemas import schemas
 from crud.UserCRUD import user_crud
-from schemas.schemas import SignUpUser, UpdateUser, Token
-from services.auth import Auth, VerifyToken
-from services.logger import logger
+from schemas.schemas import SignUpUser, UpdateUser, Token, UserResponse
+from services.auth import Auth
+from utils.logger import logger
 from utils.config import settings
-
-token_auth_scheme = HTTPBearer()
 
 router = APIRouter(
     prefix="/users",
@@ -22,37 +19,47 @@ router = APIRouter(
 
 
 @router.get("/all/")
-async def get_users():
+async def get_users() -> list[schemas.DbUser]:
     logger.info("Someone want list of all users")
     r = await user_crud.get_users()
     return r
 
 
-@router.get("/get")
-async def get_user(id: int):
-    r = await user_crud.get_user(id)
-    return r
+@router.get("/get", response_model=UserResponse)
+async def get_user(user_id: int):
+    user = await user_crud.get_user(user_id)
+    if not user:
+        return UserResponse(status_code=404, msg="User not found")
+    else:
+        return UserResponse(status_code=200, msg="User found", user=user)
 
 
-@router.post("/add")
+@router.post("/add", response_model=UserResponse)
 async def sign_up_user(user: SignUpUser):
     try:
-        r = await user_crud.add(user)
-        return r
+        user = await user_crud.add(user)
+        if user:
+            return UserResponse(user=user, status_code=200, msg="Success")
+        else:
+            raise Exception("User with this email or username already exist, try again")
     except Exception as e:
-        return e
+        return UserResponse(status_code=404, msg=f"Error: {e}")
 
 
-@router.patch("/update")
+@router.patch("/update", response_model=UserResponse)
 async def update_user(user: UpdateUser):
-    r = await user_crud.update(user)
-    return r
+    user = await user_crud.update(user)
+    if not user:
+        return UserResponse(msg="Unexpected error", status_code=404)
+    return UserResponse(msg="Success", status_code=200, user=user)
 
 
-@router.delete("/delete")
-async def delete_user(id: int):
-    r = await user_crud.delete(id)
-    return r
+@router.delete("/delete", response_model=UserResponse)
+async def delete_user(user_id: int):
+    user = await user_crud.delete(user_id)
+    if not user:
+        return UserResponse(msg="Unexpected error", status_code=404)
+    return UserResponse(msg="Success", status_code=200, user=user)
 
 
 @router.post("/token", response_model=Token)
@@ -73,19 +80,6 @@ async def login_for_access_token(
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-@router.get("/me")
-async def get_me(response: Response, token: str = Depends(token_auth_scheme)):
-    if not jwt.get_unverified_header(token.credentials) == {"alg": "RS256", "typ": "JWT"}:
-        result = VerifyToken(token.credentials).verify()
-        if result.get("status"):
-            response.status_code = status.HTTP_400_BAD_REQUEST
-        else:
-            user = await user_crud.get_by_email(result[".email"])
-            if not user:
-                user = schemas.User(email=result[".email"], username=result[".email"],
-                                    hashed_password=token.credentials[::-1][:10], is_active=False)
-                await user_crud.add(user)
-                return {"msg": "Received new email, so new user created!", "user": user}
-    else:
-        result = Auth().decode_access_token(token)
-    return result[".email"]
+@router.get("/me", response_model=UserResponse)
+async def get_me(current_user: schemas.User = Depends(Auth.get_current_user)):
+    return current_user

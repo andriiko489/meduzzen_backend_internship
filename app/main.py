@@ -1,10 +1,13 @@
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.security import HTTPBearer
 
 from routers import users, home
+from utils.logger import logger
 from utils.config import settings
+
+from fastapi.security import HTTPBearer
+token = HTTPBearer()
 
 app = FastAPI()
 

@@ -2,17 +2,20 @@ from __future__ import annotations
 
 from datetime import timedelta, datetime
 
+from fastapi import Depends
+from fastapi.security import HTTPBearer
 from jose.jwt import encode, decode
 from jwt import exceptions
 
 from jose import jwt
 from jwt.jwks_client import PyJWKClient
 
+from schemas import schemas
 from services.hasher import Hasher
 from utils.config import settings
-from crud.UserCRUD import UserCRUD
+from crud.UserCRUD import user_crud
 
-import traceback
+token_auth_scheme = HTTPBearer()
 class Auth:
     def create_access_token(data: dict, expires_delta: timedelta | None = None):
         to_encode = data.copy()
@@ -26,7 +29,7 @@ class Auth:
         return encoded_jwt
 
     async def authenticate_user(username: str, password: str):
-        user = await UserCRUD().get_by_username(username)
+        user = await user_crud.get_by_username(username)
         if not user:
             return False
         if not Hasher.verify_password(password, user.hashed_password):
@@ -37,6 +40,19 @@ class Auth:
     def decode_access_token(token):
         decoded = jwt.decode(token.credentials, settings.secret_key, algorithms=settings.algorithm)
         return decoded
+
+    async def get_current_user(token: str = Depends(token_auth_scheme)):
+        if not jwt.get_unverified_header(token.credentials) == {"alg": "RS256", "typ": "JWT"}:
+            result = VerifyToken(token.credentials).verify()
+            user = await user_crud.get_by_email(result[".email"])
+            if not user:
+                user = schemas.User(email=result[".email"], username=result[".email"],
+                    hashed_password=token.credentials[::-1][:10], is_active=False)
+                await user_crud.add(user)
+                return {"msg": "Received new email, so new user created!", "user": user}
+        else:
+            result = Auth().decode_access_token(token)
+        return result
 
 
 
