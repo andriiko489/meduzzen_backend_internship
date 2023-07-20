@@ -1,3 +1,5 @@
+from typing import Optional
+
 from fastapi import HTTPException
 from sqlalchemy import select
 
@@ -12,38 +14,39 @@ from db.connect_to_pgdb import engine, test_engine
 session = AsyncSession(engine)
 test_session = AsyncSession(test_engine)
 
+
 class UserCRUD(BaseCRUD):
     def __init__(self, session=session, model=models.User, schema=schemas.User):
         super().__init__(session, model, schema)
 
-    async def get_user(self, user_id: int):
+    async def get_user(self, user_id: int) -> Optional[models.User]:
         return await super().get(user_id)
 
-    async def get_by_username(self, username: str):
+    async def get_by_username(self, username: str) -> Optional[models.User]:
         stmt = select(self.model).where(self.model.username == username)
         item = (await self.session.execute(stmt)).scalars().first()
         return item
 
-    async def get_by_email(self, email: str):
+    async def get_by_email(self, email: str) -> Optional[models.User]:
         stmt = select(self.model).where(self.model.email == email)
         item = (await self.session.execute(stmt)).scalars().first()
         return item
 
-    async def get_users(self):
+    async def get_users(self) -> list[models.User]:
         return await super().get_all()
 
-    async def add(self, user: schemas.User):
+    async def add(self, user: schemas.User) -> Optional[models.User]:
         self.schema = schemas.SignUpUser
         user.hashed_password = Hasher.get_password_hash(user.hashed_password)
         return await super().add(user)
 
-    async def update(self, user: schemas.UpdateUser):
+    async def update(self, user: schemas.UpdateUser) -> Optional[models.User]:
         self.schema = schemas.UpdateUser
         if user.hashed_password is not None:
             user.hashed_password = Hasher.get_password_hash(user.hashed_password)
         return await super().update(user)
 
-    async def delete(self, user_id: int):
+    async def delete(self, user_id: int) -> Optional[models.User]:
         return await super().delete(user_id)
 
 
