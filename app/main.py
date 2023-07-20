@@ -52,11 +52,6 @@ async def get_users():
     r = await user_crud.get_users()
     return r
 
-@app.get("/test_all/")
-async def get_users():
-    logger.info("Someone want list of all users")
-    r = await user_crud_test.get_users()
-    return r
 
 @app.get("/get_user/{id}")
 async def get_user(id: int):
