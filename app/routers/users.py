@@ -27,7 +27,7 @@ async def get_users() -> list[schemas.DbUser]:
 
 @router.get("/get", response_model=UserResponse)
 async def get_user(user_id: int):
-    user = await user_crud.get_user(user_id)
+    user = await user_crud.get_user(user_id=user_id)
     if not user:
         return UserResponse(status_code=404, msg="User not found")
     else:
@@ -37,7 +37,7 @@ async def get_user(user_id: int):
 @router.post("/add", response_model=UserResponse)
 async def sign_up_user(user: SignUpUser):
     try:
-        user = await user_crud.add(user)
+        user = await user_crud.add(user=user)
         if user:
             return UserResponse(user=user, status_code=200, msg="Success")
         else:
@@ -48,7 +48,7 @@ async def sign_up_user(user: SignUpUser):
 
 @router.patch("/update", response_model=UserResponse)
 async def update_user(user: UpdateUser):
-    user = await user_crud.update(user)
+    user = await user_crud.update(user=user)
     if not user:
         return UserResponse(msg="Unexpected error", status_code=404)
     return UserResponse(msg="Success", status_code=200, user=user)
@@ -56,7 +56,7 @@ async def update_user(user: UpdateUser):
 
 @router.delete("/delete", response_model=UserResponse)
 async def delete_user(user_id: int):
-    user = await user_crud.delete(user_id)
+    user = await user_crud.delete(user_id=user_id)
     if not user:
         return UserResponse(msg="Unexpected error", status_code=404)
     return UserResponse(msg="Success", status_code=200, user=user)

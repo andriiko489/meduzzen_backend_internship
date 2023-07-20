@@ -29,10 +29,10 @@ class Auth:
         return encoded_jwt
 
     async def authenticate_user(username: str, password: str):
-        user = await user_crud.get_by_username(username)
+        user = await user_crud.get_by_username(username=username)
         if not user:
             return False
-        if not Hasher.verify_password(password, user.hashed_password):
+        if not Hasher.verify_password(plain_password=password, hashed_password=Auth.hashed_password):
             return False
         return user
 
