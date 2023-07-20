@@ -77,7 +77,7 @@ async def login_for_access_token(
     access_token = Auth.create_access_token(
         data={"sub": user.username, ".email": user.email}, expires_delta=access_token_expires
     )
-    return {"access_token": access_token, "token_type": "bearer"}
+    return Token(access_token=access_token, token_type="bearer")
 
 
 @router.get("/me", response_model=UserResponse)
