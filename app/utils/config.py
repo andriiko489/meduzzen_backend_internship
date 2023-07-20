@@ -18,10 +18,5 @@ class Settings(BaseSettings):
     api_audience: str
     algorithms: str
     issuer: str
-#
-# DOMAIN=dev-ozbqsg27wu7s6fco.us.auth0.com
-# API_AUDIENCE=andriiko489
-# ALGORITHMS=RS256
-# ISSUER
 
 settings = Settings()

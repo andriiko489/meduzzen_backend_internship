@@ -1,4 +1,3 @@
-from fastapi import HTTPException
 from sqlalchemy import select
 
 from typing import TypeVar, Generic

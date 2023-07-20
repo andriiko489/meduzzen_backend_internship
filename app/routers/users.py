@@ -21,8 +21,7 @@ router = APIRouter(
 @router.get("/all/")
 async def get_users() -> list[schemas.DbUser]:
     logger.info("Someone want list of all users")
-    r = await user_crud.get_users()
-    return r
+    return await user_crud.get_users()
 
 
 @router.get("/get", response_model=UserResponse)
@@ -30,8 +29,7 @@ async def get_user(user_id: int):
     user = await user_crud.get_user(user_id=user_id)
     if not user:
         return UserResponse(status_code=404, msg="User not found")
-    else:
-        return UserResponse(status_code=200, msg="User found", user=user)
+    return UserResponse(status_code=200, msg="User found", user=user)
 
 
 @router.post("/add", response_model=UserResponse)

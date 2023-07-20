@@ -1,6 +1,5 @@
 from typing import Optional
 
-from fastapi import HTTPException
 from sqlalchemy import select
 
 from crud.BaseCRUD import BaseCRUD
