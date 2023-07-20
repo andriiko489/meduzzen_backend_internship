@@ -1,26 +1,32 @@
 from fastapi import HTTPException
 from sqlalchemy import select
 
-from crud.BaseCRUD import BaseCRUD, session
+from crud.BaseCRUD import BaseCRUD
 from schemas import models, schemas
 from services.hasher import Hasher
 
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from db.connect_to_pgdb import engine
+
+session = AsyncSession(engine)
+
 
 class UserCRUD(BaseCRUD):
-    def __init__(self, model=models.User, schema=schemas.User):
-        super().__init__(model, schema)
+    def __init__(self, session=session, model=models.User, schema=schemas.User):
+        super().__init__(session, model, schema)
 
     async def get_user(self, user_id: int):
         return await super().get(user_id)
 
     async def get_by_username(self, username: str):
         stmt = select(self.model).where(self.model.username == username)
-        item = (await session.execute(stmt)).scalars().first()
+        item = (await self.session.execute(stmt)).scalars().first()
         return item
 
     async def get_by_email(self, email: str):
         stmt = select(self.model).where(self.model.email == email)
-        item = (await session.execute(stmt)).scalars().first()
+        item = (await self.session.execute(stmt)).scalars().first()
         return item
 
     async def get_users(self):
