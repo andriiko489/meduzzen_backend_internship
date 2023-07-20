@@ -11,6 +11,7 @@ T = TypeVar('T')
 
 session = AsyncSession(engine)
 
+
 def return_if_not_empty(pd_field, db_field):
     if pd_field is not None:
         db_field = pd_field
@@ -46,6 +47,7 @@ class BaseCRUD(Generic[T]):
             d[column] = eval(f"item.{column}")
         db_item = self.model(**d)
         self.session.add(db_item)
+        print(db_item)
         await self.session.commit()
         await self.session.refresh(db_item)
         return db_item
@@ -59,7 +61,7 @@ class BaseCRUD(Generic[T]):
             exec(f"db_item.{column} = return_if_not_empty(item.{column}, db_item.{column})")
 
         await self.session.commit()
-        await self.session.flush(db_item)
+        await self.session.refresh(db_item)
         return await self.get(item.id)
 
     async def delete(self, id: int):

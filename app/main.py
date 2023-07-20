@@ -9,7 +9,7 @@ from fastapi.security import OAuth2PasswordRequestForm, HTTPBearer
 from jose import jwt
 
 from schemas import schemas
-from crud.UserCRUD import user_crud
+from crud.UserCRUD import user_crud, user_crud_test
 from schemas.schemas import SignUpUser, UpdateUser, Token
 from services.auth import Auth, VerifyToken
 from utils.config import settings
@@ -52,6 +52,11 @@ async def get_users():
     r = await user_crud.get_users()
     return r
 
+@app.get("/test_all/")
+async def get_users():
+    logger.info("Someone want list of all users")
+    r = await user_crud_test.get_users()
+    return r
 
 @app.get("/get_user/{id}")
 async def get_user(id: int):
