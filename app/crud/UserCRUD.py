@@ -8,10 +8,9 @@ from services.hasher import Hasher
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from db.connect_to_pgdb import engine, test_engine
+from db.connect_to_pgdb import engine
 
 session = AsyncSession(engine)
-test_session = AsyncSession(test_engine)
 
 
 class UserCRUD(BaseCRUD):
@@ -51,4 +50,4 @@ class UserCRUD(BaseCRUD):
 
 user_crud = UserCRUD()
 
-user_crud_test = UserCRUD(test_session)
+

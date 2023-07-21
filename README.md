@@ -31,9 +31,11 @@ docker-compose up
 `python -m pytest`
 # Як створити міграції
 В терміналі контейнера `app` виконати наступну команду
-`alembic revision --autogenerate -m "Added user table"`
+`alembic -n main_db revision --autogenerate -m "Added user table"`
 # Як виконати міграції
-В терміналі контейнера `app` виконати наступну команду
-`alembic upgrade head`
-Після цього можна підключитися до контейнера `pgdb` і перевірити чи виконались міграції за допомогою `psql`
+В терміналі контейнера `app` виконати наступні команди
+```
+alembic -n main_db upgrade head
+alembic -n test_db upgrade head
+```
 
