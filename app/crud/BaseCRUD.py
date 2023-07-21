@@ -1,8 +1,9 @@
-from fastapi import HTTPException
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from typing import TypeVar, Generic
+
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from db.connect_to_pgdb import engine
 
 T = TypeVar('T')
@@ -17,9 +18,10 @@ def return_if_not_empty(pd_field, db_field):
 
 
 class BaseCRUD(Generic[T]):
-    def __init__(self, model, schema):
+    def __init__(self, session, model, schema):
         self.model = model
         self.schema = schema
+        self.session = session
 
     def get_columns(self):
         columns = [str(column) for column in self.model.__table__.columns]
@@ -29,13 +31,11 @@ class BaseCRUD(Generic[T]):
         return columns
 
     async def get(self, item_id: int):
-        item = await session.get(self.model, item_id)
-        if not item:
-            raise HTTPException(status_code=404, detail="User not found")
+        item = await self.session.get(self.model, item_id)
         return item
 
     async def get_all(self):
-        result = await session.execute(select(self.model))
+        result = await self.session.execute(select(self.model))
         return result.scalars().all()
 
     async def add(self, item):
@@ -43,25 +43,35 @@ class BaseCRUD(Generic[T]):
         for column in self.get_columns():
             d[column] = eval(f"item.{column}")
         db_item = self.model(**d)
-        session.add(db_item)
-        await session.commit()
-        await session.refresh(db_item)
+        try:
+            self.session.add(db_item)
+            await self.session.commit()
+            await self.session.refresh(db_item)
+        except:
+            await self.session.rollback()
+            db_item = None
         return db_item
 
     async def update(self, item):
         db_item = await self.get(item.id)
 
         columns = self.get_columns()
-
-        for column in columns:
-            exec(f"db_item.{column} = return_if_not_empty(item.{column}, db_item.{column})")
-
-        await session.commit()
-        await session.flush(db_item)
-        return await self.get(item.id)
+        try:
+            for column in columns:
+                exec(f"db_item.{column} = return_if_not_empty(item.{column}, db_item.{column})")
+            await self.session.commit()
+            await self.session.refresh(db_item)
+        except:
+            await self.session.rollback()
+            item = None
+        return item
 
     async def delete(self, id: int):
         item = await self.get(id)
-        await session.delete(item)
-        await session.commit()
-        return {"status": 202}
+        try:
+            await self.session.delete(item)
+            await self.session.commit()
+        except:
+            await self.session.rollback()
+            item = None
+        return item

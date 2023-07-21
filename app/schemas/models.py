@@ -1,6 +1,9 @@
 from sqlalchemy import Boolean, Column, Integer, String
+from sqlalchemy.orm import DeclarativeBase
 
-from db.connect_to_pgdb import Base
+
+class Base(DeclarativeBase):
+    pass
 
 
 class User(Base):

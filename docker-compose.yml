@@ -8,6 +8,8 @@ services:
     depends_on:
       pgdb:
         condition: service_healthy
+      pgdb_test:
+        condition: service_healthy
     networks:
       - app-tier
   pgdb:
@@ -15,17 +17,36 @@ services:
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin
-      POSTGRES_DB: mydb
-      PGDATA: /var/lib/postgresql/data/my_data/
+      POSTGRES_DB: main_db
+      PGDATA: /var/lib/postgresql/data/main_db/
     networks:
       - app-tier
     volumes:
       - ./db:/var/lib/postgresql/data
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -d mydb -U admin" ]
+      test: [ "CMD-SHELL", "pg_isready -d main_db -U admin" ]
       interval: 5s
       timeout: 5s
       retries: 5
+  pgdb_test:
+    image: postgis/postgis
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: test_db
+      PGDATA: /var/lib/postgresql/data/test_db/
+    networks:
+      - app-tier
+    volumes:
+      - ./db:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -d test_db -U admin" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    depends_on:
+      pgdb:
+        condition: service_healthy
   redis:
     image: redis
     ports:

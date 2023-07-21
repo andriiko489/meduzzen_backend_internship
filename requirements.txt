@@ -5,10 +5,14 @@ uvicorn~=0.22.0
 httpx
 python-dotenv
 pytest
-SQLAlchemy~=1.4
+SQLAlchemy==2.0.19
 psycopg2
 asyncpg
 redis~=4.6.0
 nest-asyncio
 alembic
 passlib[bcrypt]
+python-multipart
+pyjwt[crypto]
+python-jose[cryptography]
+pytest-asyncio
