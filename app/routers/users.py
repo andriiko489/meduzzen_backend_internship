@@ -18,7 +18,6 @@ router = APIRouter(
     tags=["users"])
 
 
-
 @router.get("/all/")
 async def get_users() -> list[schemas.DbUser]:
     logger.info("Someone want list of all users")

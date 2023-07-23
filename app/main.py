@@ -1,13 +1,8 @@
 import uvicorn
 from fastapi import FastAPI
-from fastapi.exceptions import RequestValidationError, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-from starlette.exceptions import HTTPException as StarletteHTTPException
-from starlette.responses import PlainTextResponse
-
 from routers import users, home
-from schemas import schemas
 from utils.logger import logger
 from utils.config import settings
 
@@ -19,13 +14,6 @@ app = FastAPI()
 
 app.include_router(users.router)
 app.include_router(home.router)
-
-
-# @app.exception_handler(StarletteHTTPException)
-# async def validation_exception_handler(request, exc):
-#     return PlainTextResponse(str(schemas.UserResponse(
-#         msg=str(exc.detail), status_code=exc.status_code
-#     ).model_dump_json(indent=2)), status_code=exc.status_code)
 
 
 token_auth_scheme = HTTPBearer()
