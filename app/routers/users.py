@@ -8,7 +8,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 
 from schemas import schemas
 from crud.UserCRUD import user_crud
-from schemas.schemas import SignUpUser, UpdateUser, Token, UserResponse
+from schemas.schemas import SignUpUser, Token, UserResponse, UpdateUser
 from services.auth import Auth
 from utils.logger import logger
 from utils.config import settings
@@ -16,6 +16,7 @@ from utils.config import settings
 router = APIRouter(
     prefix="/users",
     tags=["users"])
+
 
 
 @router.get("/all/")
@@ -48,7 +49,7 @@ async def sign_up_user(user: SignUpUser):
 async def update_user(user: UpdateUser):
     user = await user_crud.update(user=user)
     if not user:
-        return UserResponse(msg="Unexpected error", status_code=404)
+        raise HTTPException(detail="User not found", status_code=404)
     return UserResponse(msg="Success", status_code=200, user=user)
 
 
