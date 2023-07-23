@@ -26,7 +26,6 @@ class Token(BaseModel):
 
 class BaseResponse(BaseModel):
     msg: str
-    status_code: int
 
 
 class UserResponse(BaseResponse):

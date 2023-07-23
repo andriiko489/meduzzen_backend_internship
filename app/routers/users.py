@@ -29,8 +29,8 @@ async def get_users() -> list[schemas.DbUser]:
 async def get_user(user_id: int):
     user = await user_crud.get_user(user_id=user_id)
     if not user:
-        return UserResponse(status_code=404, msg="User not found")
-    return UserResponse(status_code=200, msg="User found", user=user)
+        return UserResponse(msg="User not found")
+    return UserResponse(msg="User found", user=user)
 
 
 @router.post("/add", response_model=UserResponse)
@@ -38,7 +38,7 @@ async def sign_up_user(user: SignUpUser):
     try:
         user = await user_crud.add(user=user)
         if user:
-            return UserResponse(user=user, status_code=200, msg="Success")
+            return UserResponse(user=user, msg="Success")
         else:
             raise Exception("User with this email or username already exist, try again")
     except Exception as e:
@@ -50,15 +50,15 @@ async def update_user(user: UpdateUser):
     user = await user_crud.update(user=user)
     if not user:
         raise HTTPException(detail="User not found", status_code=404)
-    return UserResponse(msg="Success", status_code=200, user=user)
+    return UserResponse(msg="Success", user=user)
 
 
 @router.delete("/delete", response_model=UserResponse)
 async def delete_user(user_id: int):
     user = await user_crud.delete(user_id=user_id)
     if not user:
-        return UserResponse(msg="Unexpected error", status_code=404)
-    return UserResponse(msg="Success", status_code=200, user=user)
+        return UserResponse(msg="Unexpected error")
+    return UserResponse(msg="Success", user=user)
 
 
 @router.post("/token", response_model=Token)
