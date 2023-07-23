@@ -49,10 +49,11 @@ async def update_user(user: UpdateUser):
 
 
 @router.delete("/delete", response_model=UserResponse)
-async def delete_user(user_id: int):
+async def delete_user(user_id: int, current_user: schemas.User = Depends(Auth.get_current_user)):
+    print(current_user)
+    if user_id != current_user.id:
+        raise HTTPException(detail="User can delete only yourself", status_code=404)
     user = await user_crud.delete(user_id=user_id)
-    if not user:
-        raise HTTPException(detail="User not found", status_code=404)
     return UserResponse(msg="Success", user=user)
 
 
