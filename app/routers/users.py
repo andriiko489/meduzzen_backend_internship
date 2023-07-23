@@ -29,20 +29,16 @@ async def get_users() -> list[schemas.DbUser]:
 async def get_user(user_id: int):
     user = await user_crud.get_user(user_id=user_id)
     if not user:
-        return UserResponse(msg="User not found")
+        raise HTTPException(detail="User not found", status_code=404)
     return UserResponse(msg="User found", user=user)
 
 
 @router.post("/add", response_model=UserResponse)
 async def sign_up_user(user: SignUpUser):
-    try:
-        user = await user_crud.add(user=user)
-        if user:
-            return UserResponse(user=user, msg="Success")
-        else:
-            raise Exception("User with this email or username already exist, try again")
-    except Exception as e:
-        return UserResponse(status_code=404, msg=f"Error: {e}")
+    user = await user_crud.add(user=user)
+    if not user:
+        raise HTTPException(detail="Something went wrong", status_code=418)
+    return UserResponse(msg="Success", user=user)
 
 
 @router.patch("/update", response_model=UserResponse)
@@ -57,7 +53,7 @@ async def update_user(user: UpdateUser):
 async def delete_user(user_id: int):
     user = await user_crud.delete(user_id=user_id)
     if not user:
-        return UserResponse(msg="Unexpected error")
+        raise HTTPException(detail="User not found", status_code=404)
     return UserResponse(msg="Success", user=user)
 
 

@@ -21,12 +21,11 @@ app.include_router(users.router)
 app.include_router(home.router)
 
 
-@app.exception_handler(StarletteHTTPException)
-async def validation_exception_handler(request, exc):
-    return PlainTextResponse(str(schemas.UserResponse(
-        msg=str(exc.detail), status_code=exc.status_code
-    ).model_dump_json(indent=2)), status_code=exc.status_code)
-    #return schemas.UserResponse(msg=str(exc.detail), status_code=exc.status_code, user=None)
+# @app.exception_handler(StarletteHTTPException)
+# async def validation_exception_handler(request, exc):
+#     return PlainTextResponse(str(schemas.UserResponse(
+#         msg=str(exc.detail), status_code=exc.status_code
+#     ).model_dump_json(indent=2)), status_code=exc.status_code)
 
 
 token_auth_scheme = HTTPBearer()
