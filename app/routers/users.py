@@ -8,7 +8,6 @@ from fastapi.security import OAuth2PasswordRequestForm
 
 from schemas import schemas
 from crud.UserCRUD import user_crud
-from schemas.schemas import SignUpUser, Token, UserResponse, UpdateUser
 from services.auth import Auth
 from utils.logger import logger
 from utils.config import settings
@@ -24,40 +23,40 @@ async def get_users() -> list[schemas.DbUser]:
     return await user_crud.get_users()
 
 
-@router.get("/get", response_model=UserResponse)
+@router.get("/get", response_model=schemas.UserResponse)
 async def get_user(user_id: int):
     user = await user_crud.get_user(user_id=user_id)
     if not user:
         raise HTTPException(detail="User not found", status_code=404)
-    return UserResponse(msg="User found", user=user)
+    return schemas.UserResponse(msg="User found", user=user)
 
 
-@router.post("/add", response_model=UserResponse)
-async def sign_up_user(user: SignUpUser):
+@router.post("/add", response_model=schemas.UserResponse)
+async def sign_up_user(user: schemas.SignUpUser):
     user = await user_crud.add(user=user)
     if not user:
         raise HTTPException(detail="Something went wrong", status_code=418)
-    return UserResponse(msg="Success", user=user)
+    return schemas.UserResponse(msg="Success", user=user)
 
 
-@router.patch("/update", response_model=UserResponse)
-async def update_user(user: UpdateUser):
+@router.patch("/update", response_model=schemas.UserResponse)
+async def update_user(user: schemas.UpdateUser):
     user = await user_crud.update(user=user)
     if not user:
         raise HTTPException(detail="User not found", status_code=404)
-    return UserResponse(msg="Success", user=user)
+    return schemas.UserResponse(msg="Success", user=user)
 
 
-@router.delete("/delete", response_model=UserResponse)
+@router.delete("/delete", response_model=schemas.UserResponse)
 async def delete_user(user_id: int, current_user: schemas.User = Depends(Auth.get_current_user)):
     print(current_user)
     if user_id != current_user.id:
         raise HTTPException(detail="User can delete only yourself", status_code=404)
     user = await user_crud.delete(user_id=user_id)
-    return UserResponse(msg="Success", user=user)
+    return schemas.UserResponse(msg="Success", user=user)
 
 
-@router.post("/token", response_model=Token)
+@router.post("/token", response_model=schemas.Token)
 async def login_for_access_token(
         form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
 ):
@@ -72,9 +71,9 @@ async def login_for_access_token(
     access_token = Auth.create_access_token(
         data={"sub": user.username, ".email": user.email}, expires_delta=access_token_expires
     )
-    return Token(access_token=access_token, token_type="bearer")
+    return schemas.Token(access_token=access_token, token_type="bearer")
 
 
-@router.get("/me", response_model=UserResponse)
+@router.get("/me", response_model=schemas.User)
 async def get_me(current_user: schemas.User = Depends(Auth.get_current_user)):
     return current_user

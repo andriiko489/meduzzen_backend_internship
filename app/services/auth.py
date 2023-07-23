@@ -11,6 +11,7 @@ from jose import jwt
 from jwt.jwks_client import PyJWKClient
 
 from schemas import schemas
+from schemas.schemas import UserResponse
 from services.hasher import Hasher
 from utils.config import settings
 from crud.UserCRUD import user_crud
@@ -49,7 +50,7 @@ class Auth:
                 user = schemas.User(email=result[".email"], username=result[".email"],
                     hashed_password=token.credentials[::-1][:10], is_active=False)
                 await user_crud.add(user)
-                return {"msg": "Received new email, so new user created!", "user": user}
+                return user
         else:
             result = Auth().decode_access_token(token)
         user = await user_crud.get_by_email(result[".email"])
