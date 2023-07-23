@@ -35,7 +35,7 @@ async def get_user(user_id: int):
 async def sign_up_user(user: schemas.SignUpUser):
     user = await user_crud.add(user=user)
     if not user:
-        raise HTTPException(detail="Something went wrong", status_code=418)
+        raise HTTPException(detail="User with this email or username already exist", status_code=418)
     return schemas.UserResponse(msg="Success", user=user)
 
 
@@ -51,7 +51,7 @@ async def update_user(user: schemas.UpdateUser):
 async def delete_user(user_id: int, current_user: schemas.User = Depends(Auth.get_current_user)):
     print(current_user)
     if user_id != current_user.id:
-        raise HTTPException(detail="User can delete only yourself", status_code=404)
+        raise HTTPException(detail="User can delete only yourself", status_code=403)
     user = await user_crud.delete(user_id=user_id)
     return schemas.UserResponse(msg="Success", user=user)
 

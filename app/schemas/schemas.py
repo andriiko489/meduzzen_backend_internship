@@ -55,7 +55,7 @@ class UpdateUser(BaseModel):
     @field_validator("email")
     def validate_email_no_changed(cls, value):
         if not value is None:
-            raise HTTPException(detail="User cannot change email", status_code=404)
+            raise HTTPException(detail="User cannot change email", status_code=403)
         return value
 
 
