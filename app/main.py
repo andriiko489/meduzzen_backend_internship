@@ -7,12 +7,14 @@ from utils.logger import logger
 from utils.config import settings
 
 from fastapi.security import HTTPBearer
+
 token = HTTPBearer()
 
 app = FastAPI()
 
 app.include_router(users.router)
 app.include_router(home.router)
+
 
 token_auth_scheme = HTTPBearer()
 

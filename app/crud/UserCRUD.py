@@ -42,12 +42,11 @@ class UserCRUD(BaseCRUD):
         self.schema = schemas.UpdateUser
         if user.hashed_password is not None:
             user.hashed_password = Hasher.get_password_hash(user.hashed_password)
-        return await super().update(user)
+        await super().update(user)
+        return await self.get(user.id)  # it needeed because UserUpdate have email = None
 
     async def delete(self, user_id: int) -> Optional[models.User]:
         return await super().delete(user_id)
 
 
 user_crud = UserCRUD()
-
-
