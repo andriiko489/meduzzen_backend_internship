@@ -17,13 +17,6 @@ class BaseCRUD(Generic[T]):
         self.schema = schema
         self.session = session
 
-    def get_columns(self):
-        columns = [str(column) for column in self.model.__table__.columns]
-        columns = [column[column.index(".") + 1:] for column in columns]
-        columns = [column for column in columns
-                   if column != "id"]
-        return columns
-
     async def get(self, item_id: int):
         item = await self.session.get(self.model, item_id)
         return item
@@ -33,10 +26,7 @@ class BaseCRUD(Generic[T]):
         return result.scalars().all()
 
     async def add(self, item):
-        d = {}
-        columns = type(item).__fields__.keys()
-        for column in columns:
-            d[column] = eval(f"item.{column}")
+        d = eval(item.model_dump_json())
         db_item = self.model(**d)
         try:
             db_item = await self.session.merge(db_item)
@@ -51,7 +41,7 @@ class BaseCRUD(Generic[T]):
     async def update(self, item):
         db_item = await self.get(item.id)
 
-        columns = self.get_columns()
+        columns = item.__fields__.keys()
         try:
             for column in columns:
                 exec(f"db_item.{column} = return_if_not_empty(item.{column}, db_item.{column})")
