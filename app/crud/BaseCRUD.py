@@ -26,7 +26,10 @@ class BaseCRUD(Generic[T]):
         return result.scalars().all()
 
     async def add(self, item):
-        d = eval(item.model_dump_json())
+        d = {}
+        columns = type(item).__fields__.keys()
+        for column in columns:
+            d[column] = eval(f"item.{column}")
         db_item = self.model(**d)
         try:
             db_item = await self.session.merge(db_item)
