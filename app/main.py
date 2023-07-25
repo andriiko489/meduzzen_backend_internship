@@ -2,7 +2,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from routers import users, home
+from routers import users, home, company
 from utils.logger import logger
 from utils.config import settings
 
@@ -14,6 +14,7 @@ app = FastAPI()
 
 app.include_router(users.router)
 app.include_router(home.router)
+app.include_router(company.router)
 
 
 token_auth_scheme = HTTPBearer()
