@@ -31,7 +31,7 @@ docker-compose up
 `python -m pytest`
 # Як створити міграції
 В терміналі контейнера `app` виконати наступну команду
-`alembic -n main_db revision --autogenerate -m "Added user table"`
+`alembic -n main_db revision --autogenerate -m "init"`
 # Як виконати міграції
 В терміналі контейнера `app` виконати наступні команди
 ```
