@@ -11,7 +11,6 @@ from jose import jwt
 from jwt.jwks_client import PyJWKClient
 
 from schemas import schemas
-from schemas.schemas import UserResponse
 from services.hasher import Hasher
 from utils.config import settings
 from crud.UserCRUD import user_crud
