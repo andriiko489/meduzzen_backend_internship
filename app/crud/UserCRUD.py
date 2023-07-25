@@ -10,11 +10,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.connect_to_pgdb import engine
 
-session = AsyncSession(engine)
+default_session = AsyncSession(engine)
 
 
 class UserCRUD(BaseCRUD):
-    def __init__(self, session=session, model=models.User, schema=schemas.User):
+    def __init__(self, session=default_session, model=models.User, schema=schemas.User):
         super().__init__(session, model, schema)
 
     async def get_user(self, user_id: int) -> Optional[models.User]:
