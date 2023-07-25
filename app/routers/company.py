@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends
 
 from crud.CompanyCRUD import company_crud
-from schemas import company_schemas, schemas
+from schemas import schemas
 from services.auth import Auth
 from utils.logger import logger
 
@@ -25,7 +25,8 @@ async def get_companies(company_id: int):
 
 
 @router.post("/add")
-async def add_company(company: company_schemas.Company, current_user: schemas.User = Depends(Auth.get_current_user)):
+async def add_company(company: schemas.AddCompany, current_user: schemas.User = Depends(Auth.get_current_user)):
+    company = schemas.Company(**eval(company.model_dump_json()))
     company.owner = current_user
     company = await company_crud.add(company=company)
     if not company:
