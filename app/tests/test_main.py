@@ -6,7 +6,7 @@ from fastapi.testclient import TestClient
 
 from main import app
 from schemas import schemas
-from tests.conect_to_testdb import user_crud_test
+from tests.connect_to_testdb import user_crud_test
 
 client = TestClient(app)
 
