@@ -2,13 +2,7 @@ from sqlalchemy import select
 
 from typing import TypeVar, Generic
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from db.connect_to_pgdb import engine
-
 T = TypeVar('T')
-
-session = AsyncSession(engine)
 
 
 def return_if_not_empty(pd_field, db_field):
@@ -40,10 +34,12 @@ class BaseCRUD(Generic[T]):
 
     async def add(self, item):
         d = {}
-        for column in self.get_columns():
+        columns = type(item).__fields__.keys()
+        for column in columns:
             d[column] = eval(f"item.{column}")
         db_item = self.model(**d)
         try:
+            db_item = await self.session.merge(db_item)
             self.session.add(db_item)
             await self.session.commit()
             await self.session.refresh(db_item)
