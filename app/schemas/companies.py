@@ -34,7 +34,8 @@ class UpdateCompany(RequestUpdateCompany):
     async def validate_its_owner_of_company(self):
         company = (
             await BaseCRUD(schema=Company, model=models.Company, session=pgdb.session).get(self.id))
-        print(company)
+        if company is None:
+            raise HTTPException(detail="Company with this id doesnt exist", status_code=404)
         if self.owner_id != company.owner_id:
             raise HTTPException(detail="This user not owner of this company", status_code=403)
         return self

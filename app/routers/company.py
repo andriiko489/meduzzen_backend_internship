@@ -36,13 +36,9 @@ async def add_company(company: companies.AddCompany, current_user: users.User = 
 
 @router.patch("/update")
 async def update_company(company: companies.RequestUpdateCompany, current_user: users.User = Depends(Auth.get_current_user)):
-    d = company.model_dump()
-    print(d)
-    d["owner_id"] = current_user.id
-    print(d)
-    company = companies.UpdateCompany(**d)
+    company = companies.UpdateCompany(**company.model_dump())
+    company.owner_id = current_user.id
     await company.model_validate(company)
-    print(company)
     company = await company_crud.update(company=company)
     if not company:
         raise HTTPException(detail="Company not found", status_code=404)
