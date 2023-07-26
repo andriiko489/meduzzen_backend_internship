@@ -43,3 +43,13 @@ async def update_company(company: companies.RequestUpdateCompany, current_user: 
     if not company:
         raise HTTPException(detail="Company not found", status_code=404)
     return company
+
+@router.delete("/delete")
+async def delete_user(company_id: int, current_user: users.User = Depends(Auth.get_current_user)):
+    company = await company_crud.get_company(company_id)
+    if company is None:
+        HTTPException(detail="Company not found", status_code=404)
+    if company.owner_id != current_user.id:
+        HTTPException(detail="Only owner can delete this company", status_code=403)
+    company = await company_crud.delete(company_id=company_id)
+    return company

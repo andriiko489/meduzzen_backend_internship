@@ -26,5 +26,7 @@ class CompanyCRUD(BaseCRUD):
         await super().update(company)
         return await self.get(company.id)
 
+    async def delete(self, company_id: int) -> Optional[models.Company]:
+        return await super().delete(company_id)
 
 company_crud = CompanyCRUD()
