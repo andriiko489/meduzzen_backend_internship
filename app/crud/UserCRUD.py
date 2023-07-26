@@ -3,14 +3,12 @@ from typing import Optional
 from sqlalchemy import select
 
 from crud.BaseCRUD import BaseCRUD
+from db import pgdb
 from schemas import models, schemas
 from services.hasher import Hasher
 
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from db.connect_to_pgdb import engine
-
-default_session = AsyncSession(engine)
+default_session = pgdb.session
 
 
 class UserCRUD(BaseCRUD):

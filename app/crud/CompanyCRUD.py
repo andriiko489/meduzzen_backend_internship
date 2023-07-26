@@ -1,12 +1,10 @@
 from typing import Optional
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from crud.BaseCRUD import BaseCRUD
-from db.connect_to_pgdb import engine
+from db import pgdb
 from schemas import models, schemas
 
-default_session = AsyncSession(engine)
+default_session = pgdb.session
 
 
 class CompanyCRUD(BaseCRUD):
