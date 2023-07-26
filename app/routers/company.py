@@ -32,3 +32,11 @@ async def add_company(company: schemas.AddCompany, current_user: schemas.User = 
     if not company:
         raise HTTPException(status_code=418)
     return company
+
+
+@router.patch("/update")
+async def update_user(company: schemas.UpdateCompany):
+    company = await company_crud.update(company=company)
+    if not company:
+        raise HTTPException(detail="Company not found", status_code=404)
+    return company

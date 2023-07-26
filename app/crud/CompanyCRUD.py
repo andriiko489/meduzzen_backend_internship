@@ -20,5 +20,10 @@ class CompanyCRUD(BaseCRUD):
     async def add(self, company: schemas.Company) -> Optional[models.Company]:
         return await super().add(company)
 
+    async def update(self, company: schemas.UpdateCompany) -> Optional[models.Company]:
+        self.schema = schemas.UpdateCompany
+        await super().update(company)
+        return await self.get(company.id)
+
 
 company_crud = CompanyCRUD()

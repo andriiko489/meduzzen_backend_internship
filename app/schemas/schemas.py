@@ -75,6 +75,11 @@ class UpdateUser(BaseModel):
         return value
 
 
+class UpdateCompany(BaseModel):
+    id: int
+    name: Optional[str] = None
+
+
 class UserList(BaseModel):
     pass
 
