@@ -32,7 +32,7 @@ class UserCRUD(BaseCRUD):
         return await super().get_all()
 
     async def add(self, user: schemas.User) -> Optional[models.User]:
-        self.schema = schemas.SignUpUser
+        self.schema = schemas.AddUser
         user.hashed_password = Hasher.get_password_hash(user.hashed_password)
         return await super().add(user)
 

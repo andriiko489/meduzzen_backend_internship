@@ -32,7 +32,7 @@ async def get_user(user_id: int):
 
 
 @router.post("/add", response_model=schemas.UserResponse)
-async def sign_up_user(user: schemas.SignUpUser):
+async def add_user(user: schemas.AddUser):
     user = await user_crud.add(user=user)
     if not user:
         raise HTTPException(detail="User with this email or username already exist", status_code=418)

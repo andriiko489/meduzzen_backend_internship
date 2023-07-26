@@ -27,6 +27,14 @@ class AddCompany(BaseModel):
     name: str
 
 
+class AddUser(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    username: str
+    hashed_password: str
+    email: str
+    is_active: bool
+
+
 class DbUser(User):
     id: int
 
@@ -51,10 +59,6 @@ class DbUserResponse(UserResponse):
 class SignInUser(BaseModel):
     username: str
     password: str
-
-
-class SignUpUser(User):
-    pass
 
 
 class UpdateUser(BaseModel):
