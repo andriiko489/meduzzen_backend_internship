@@ -13,18 +13,20 @@ class Company(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: Optional[int] = None
     name: str
+    description: Optional[str] = None
     owner: Optional[User] = None
 
 
 class AddCompany(BaseModel):
-    # model_config = ConfigDict(arbitrary_types_allowed=True)
     model_config = ConfigDict(from_attributes=True)
     name: str
+    description: Optional[str] = None
 
 
 class RequestUpdateCompany(BaseModel):
     id: int
     name: Optional[str] = None
+    description: Optional[str] = None
 
 
 class UpdateCompany(RequestUpdateCompany):
