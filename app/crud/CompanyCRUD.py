@@ -2,13 +2,14 @@ from typing import Optional
 
 from crud.BaseCRUD import BaseCRUD
 from db import pgdb
-from schemas import models, schemas
+from schemas import companies
+from models import models
 
 default_session = pgdb.session
 
 
 class CompanyCRUD(BaseCRUD):
-    def __init__(self, session=default_session, model=models.Company, schema=schemas.Company):
+    def __init__(self, session=default_session, model=models.Company, schema=companies.Company):
         super().__init__(session, model, schema)
 
     async def get_company(self, company_id: int) -> Optional[models.Company]:
@@ -17,11 +18,11 @@ class CompanyCRUD(BaseCRUD):
     async def get_companies(self) -> list[models.Company]:
         return await super().get_all()
 
-    async def add(self, company: schemas.Company) -> Optional[models.Company]:
+    async def add(self, company: companies.Company) -> Optional[models.Company]:
         return await super().add(company)
 
-    async def update(self, company: schemas.UpdateCompany) -> Optional[models.Company]:
-        self.schema = schemas.UpdateCompany
+    async def update(self, company: companies.UpdateCompany) -> Optional[models.Company]:
+        self.schema = companies.UpdateCompany
         await super().update(company)
         return await self.get(company.id)
 

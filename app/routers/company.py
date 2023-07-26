@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends
 
 from crud.CompanyCRUD import company_crud
-from schemas import schemas
+from schemas import schemas, companies, users
 from services.auth import Auth
 from utils.logger import logger
 
@@ -25,8 +25,8 @@ async def get_companies(company_id: int):
 
 
 @router.post("/add")
-async def add_company(company: schemas.AddCompany, current_user: schemas.User = Depends(Auth.get_current_user)):
-    company = schemas.Company(**eval(company.model_dump_json()))
+async def add_company(company: companies.AddCompany, current_user: users.User = Depends(Auth.get_current_user)):
+    company = companies.Company(**eval(company.model_dump_json()))
     company.owner = current_user
     company = await company_crud.add(company=company)
     if not company:
@@ -35,7 +35,14 @@ async def add_company(company: schemas.AddCompany, current_user: schemas.User = 
 
 
 @router.patch("/update")
-async def update_user(company: schemas.UpdateCompany):
+async def update_company(company: companies.RequestUpdateCompany, current_user: users.User = Depends(Auth.get_current_user)):
+    d = company.model_dump()
+    print(d)
+    d["owner_id"] = current_user.id
+    print(d)
+    company = companies.UpdateCompany(**d)
+    await company.model_validate(company)
+    print(company)
     company = await company_crud.update(company=company)
     if not company:
         raise HTTPException(detail="Company not found", status_code=404)
