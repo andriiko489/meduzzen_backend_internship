@@ -1,7 +1,7 @@
 from typing import Optional
 
 from fastapi import HTTPException
-from pydantic import BaseModel, ConfigDict, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, model_validator
 
 from crud.BaseCRUD import BaseCRUD
 from db import pgdb
