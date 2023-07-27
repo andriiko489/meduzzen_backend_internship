@@ -26,7 +26,7 @@ async def get_companies(company_id: int):
 
 @router.post("/add")
 async def add_company(company: companies.AddCompany, current_user: users.User = Depends(Auth.get_current_user)):
-    company = companies.Company(**eval(company.model_dump_json()))
+    company = companies.Company(**company.model_dump())
     company.owner = current_user
     company = await company_crud.add(company=company)
     if not company:

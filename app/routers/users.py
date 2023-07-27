@@ -18,7 +18,7 @@ router = APIRouter(
 
 
 @router.get("/all/")
-async def get_users() -> list[users.DbUser]:
+async def get_users():
     logger.info("Someone want list of all users")
     return await user_crud.get_users()
 
