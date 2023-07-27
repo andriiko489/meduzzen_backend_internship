@@ -11,13 +11,13 @@ router = APIRouter(
 
 
 @router.get("/all/")
-async def get_company():
+async def get_company(current_user: user_schemas.User = Depends(Auth.get_current_user)):
     logger.info("Someone want list of all companies")
     return await company_crud.get_companies()
 
 
 @router.get("/get")
-async def get_companies(company_id: int):
+async def get_companies(company_id: int, current_user: user_schemas.User = Depends(Auth.get_current_user)):
     company = await company_crud.get_company(company_id=company_id)
     if not company:
         raise HTTPException(detail="Company not found", status_code=404)
