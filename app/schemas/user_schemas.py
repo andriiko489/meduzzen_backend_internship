@@ -1,7 +1,7 @@
 from typing import Optional
 
 from fastapi import HTTPException
-from pydantic import BaseModel, field_validator, ConfigDict
+from pydantic import BaseModel, field_validator, ConfigDict, EmailStr
 
 from schemas.basic_schemas import User
 
@@ -10,7 +10,7 @@ class AddUser(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     username: str
     hashed_password: str
-    email: str
+    email: EmailStr
     is_active: bool
 
 
