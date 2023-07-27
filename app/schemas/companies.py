@@ -6,15 +6,7 @@ from pydantic import BaseModel, ConfigDict, model_validator
 from crud.BaseCRUD import BaseCRUD
 from db import pgdb
 from models import models
-from schemas.users import User
-
-
-class Company(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-    id: Optional[int] = None
-    name: str
-    description: Optional[str] = None
-    owner: Optional[User] = None
+from schemas.basic_schemas import Company
 
 
 class AddCompany(BaseModel):
