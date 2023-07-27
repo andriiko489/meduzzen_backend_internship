@@ -4,7 +4,6 @@ from fastapi import HTTPException
 from pydantic import BaseModel, field_validator, ConfigDict
 
 from schemas.basic_schemas import User
-from schemas.schemas import BaseResponse
 
 
 class AddUser(BaseModel):
@@ -15,7 +14,8 @@ class AddUser(BaseModel):
     is_active: bool
 
 
-class UserResponse(BaseResponse):
+class UserResponse(BaseModel):
+    msg: str
     user: Optional[User] = None
 
 

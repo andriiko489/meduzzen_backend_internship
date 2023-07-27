@@ -8,9 +8,5 @@ class Token(BaseModel):
     token_type: str
 
 
-class BaseResponse(BaseModel):
-    msg: str
-
-
 class TokenData(BaseModel):
     username: str | None = None

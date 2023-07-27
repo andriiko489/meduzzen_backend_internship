@@ -5,7 +5,7 @@ from sqlalchemy import select
 from crud.BaseCRUD import BaseCRUD
 from db import pgdb
 from models import models
-from schemas import users
+from schemas import user_schemas
 from services.hasher import Hasher
 
 
@@ -13,7 +13,7 @@ default_session = pgdb.session
 
 
 class UserCRUD(BaseCRUD):
-    def __init__(self, session=default_session, model=models.User, schema=users.User):
+    def __init__(self, session=default_session, model=models.User, schema=user_schemas.User):
         super().__init__(session, model, schema)
 
     async def get_user(self, user_id: int) -> Optional[models.User]:
@@ -32,13 +32,13 @@ class UserCRUD(BaseCRUD):
     async def get_users(self) -> list[models.User]:
         return await super().get_all()
 
-    async def add(self, user: users.User) -> Optional[models.User]:
-        self.schema = users.AddUser
+    async def add(self, user: user_schemas.User) -> Optional[models.User]:
+        self.schema = user_schemas.AddUser
         user.hashed_password = Hasher.get_password_hash(user.hashed_password)
         return await super().add(user)
 
-    async def update(self, user: users.UpdateUser) -> Optional[models.User]:
-        self.schema = users.UpdateUser
+    async def update(self, user: user_schemas.UpdateUser) -> Optional[models.User]:
+        self.schema = user_schemas.UpdateUser
         if user.hashed_password is not None:
             user.hashed_password = Hasher.get_password_hash(user.hashed_password)
         await super().update(user)

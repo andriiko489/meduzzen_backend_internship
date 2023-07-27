@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends
 
 from crud.CompanyCRUD import company_crud
-from schemas import schemas, companies, users
+from schemas import company_schemas, user_schemas
 from services.auth import Auth
 from utils.logger import logger
 
@@ -25,8 +25,8 @@ async def get_companies(company_id: int):
 
 
 @router.post("/add")
-async def add_company(company: companies.AddCompany, current_user: users.User = Depends(Auth.get_current_user)):
-    company = companies.Company(**company.model_dump())
+async def add_company(company: company_schemas.AddCompany, current_user: user_schemas.User = Depends(Auth.get_current_user)):
+    company = company_schemas.Company(**company.model_dump())
     company.owner = current_user
     company = await company_crud.add(company=company)
     if not company:
@@ -35,8 +35,8 @@ async def add_company(company: companies.AddCompany, current_user: users.User = 
 
 
 @router.patch("/update")
-async def update_company(company: companies.RequestUpdateCompany, current_user: users.User = Depends(Auth.get_current_user)):
-    company = companies.UpdateCompany(**company.model_dump())
+async def update_company(company: company_schemas.RequestUpdateCompany, current_user: user_schemas.User = Depends(Auth.get_current_user)):
+    company = company_schemas.UpdateCompany(**company.model_dump())
     company.owner_id = current_user.id
     await company.model_validate(company)
     company = await company_crud.update(company=company)
@@ -45,7 +45,7 @@ async def update_company(company: companies.RequestUpdateCompany, current_user: 
     return company
 
 @router.delete("/delete")
-async def delete_user(company_id: int, current_user: users.User = Depends(Auth.get_current_user)):
+async def delete_user(company_id: int, current_user: user_schemas.User = Depends(Auth.get_current_user)):
     company = await company_crud.get_company(company_id)
     if company is None:
         HTTPException(detail="Company not found", status_code=404)
