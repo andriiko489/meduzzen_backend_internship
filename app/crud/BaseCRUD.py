@@ -2,6 +2,8 @@ from sqlalchemy import select
 
 from typing import TypeVar, Generic
 
+from schemas import user_schemas
+
 T = TypeVar('T')
 
 
@@ -27,7 +29,7 @@ class BaseCRUD(Generic[T]):
 
     async def add(self, item):
         d = {}
-        columns = type(item).__fields__.keys()
+        columns = type(item).model_fields.keys()
         for column in columns:
             d[column] = eval(f"item.{column}")
         db_item = self.model(**d)
@@ -44,7 +46,7 @@ class BaseCRUD(Generic[T]):
     async def update(self, item):
         db_item = await self.get(item.id)
 
-        columns = item.__fields__.keys()
+        columns = item.model_fields.keys()
         try:
             for column in columns:
                 exec(f"db_item.{column} = return_if_not_empty(item.{column}, db_item.{column})")
