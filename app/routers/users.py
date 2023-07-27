@@ -18,13 +18,13 @@ router = APIRouter(
 
 
 @router.get("/all/")
-async def get_users():
+async def get_users(current_user: user_schemas.User = Depends(Auth.get_current_user)):
     logger.info("Someone want list of all users")
     return await user_crud.get_users()
 
 
 @router.get("/get", response_model=user_schemas.UserResponse)
-async def get_user(user_id: int):
+async def get_user(user_id: int, current_user: user_schemas.User = Depends(Auth.get_current_user)):
     user = await user_crud.get_user(user_id=user_id)
     if not user:
         raise HTTPException(detail="User not found", status_code=404)
@@ -40,7 +40,7 @@ async def add_user(user: user_schemas.AddUser):
 
 
 @router.patch("/update", response_model=user_schemas.UserResponse)
-async def update_user(user: user_schemas.UpdateUser):
+async def update_user(user: user_schemas.UpdateUser, current_user: user_schemas.User = Depends(Auth.get_current_user)):
     user = await user_crud.update(user=user)
     if not user:
         raise HTTPException(detail="User not found", status_code=404)
