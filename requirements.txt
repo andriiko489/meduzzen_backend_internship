@@ -1,7 +1,7 @@
 fastapi~=0.100.0
 pydantic_settings
-pydantic~=2.0.2
-uvicorn~=0.22.0
+pydantic[email]
+uvicorn==0.23.1
 httpx
 python-dotenv
 pytest

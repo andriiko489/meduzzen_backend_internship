@@ -2,13 +2,9 @@ from sqlalchemy import select
 
 from typing import TypeVar, Generic
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from db.connect_to_pgdb import engine
+from schemas import user_schemas
 
 T = TypeVar('T')
-
-session = AsyncSession(engine)
 
 
 def return_if_not_empty(pd_field, db_field):
@@ -23,13 +19,6 @@ class BaseCRUD(Generic[T]):
         self.schema = schema
         self.session = session
 
-    def get_columns(self):
-        columns = [str(column) for column in self.model.__table__.columns]
-        columns = [column[column.index(".") + 1:] for column in columns]
-        columns = [column for column in columns
-                   if column != "id"]
-        return columns
-
     async def get(self, item_id: int):
         item = await self.session.get(self.model, item_id)
         return item
@@ -40,10 +29,12 @@ class BaseCRUD(Generic[T]):
 
     async def add(self, item):
         d = {}
-        for column in self.get_columns():
+        columns = type(item).model_fields.keys()
+        for column in columns:
             d[column] = eval(f"item.{column}")
         db_item = self.model(**d)
         try:
+            db_item = await self.session.merge(db_item)
             self.session.add(db_item)
             await self.session.commit()
             await self.session.refresh(db_item)
@@ -55,7 +46,7 @@ class BaseCRUD(Generic[T]):
     async def update(self, item):
         db_item = await self.get(item.id)
 
-        columns = self.get_columns()
+        columns = item.model_fields.keys()
         try:
             for column in columns:
                 exec(f"db_item.{column} = return_if_not_empty(item.{column}, db_item.{column})")

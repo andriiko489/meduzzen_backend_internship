@@ -6,7 +6,7 @@ from typing import Annotated
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 
-from schemas import schemas
+from schemas import user_schemas, token_schemas
 from crud.UserCRUD import user_crud
 from services.auth import Auth
 from utils.logger import logger
@@ -18,45 +18,44 @@ router = APIRouter(
 
 
 @router.get("/all/")
-async def get_users() -> list[schemas.DbUser]:
+async def get_users(current_user: user_schemas.User = Depends(Auth.get_current_user)):
     logger.info("Someone want list of all users")
     return await user_crud.get_users()
 
 
-@router.get("/get", response_model=schemas.UserResponse)
-async def get_user(user_id: int):
+@router.get("/get", response_model=user_schemas.UserResponse)
+async def get_user(user_id: int, current_user: user_schemas.User = Depends(Auth.get_current_user)):
     user = await user_crud.get_user(user_id=user_id)
     if not user:
         raise HTTPException(detail="User not found", status_code=404)
-    return schemas.UserResponse(msg="User found", user=user)
+    return user_schemas.UserResponse(msg="User found", user=user)
 
 
-@router.post("/add", response_model=schemas.UserResponse)
-async def sign_up_user(user: schemas.SignUpUser):
+@router.post("/add", response_model=user_schemas.UserResponse)
+async def add_user(user: user_schemas.AddUser):
     user = await user_crud.add(user=user)
     if not user:
         raise HTTPException(detail="User with this email or username already exist", status_code=418)
-    return schemas.UserResponse(msg="Success", user=user)
+    return user_schemas.UserResponse(msg="Success", user=user)
 
 
-@router.patch("/update", response_model=schemas.UserResponse)
-async def update_user(user: schemas.UpdateUser):
+@router.patch("/update", response_model=user_schemas.UserResponse)
+async def update_user(user: user_schemas.UpdateUser, current_user: user_schemas.User = Depends(Auth.get_current_user)):
     user = await user_crud.update(user=user)
     if not user:
         raise HTTPException(detail="User not found", status_code=404)
-    return schemas.UserResponse(msg="Success", user=user)
+    return user_schemas.UserResponse(msg="Success", user=user)
 
 
-@router.delete("/delete", response_model=schemas.UserResponse)
-async def delete_user(user_id: int, current_user: schemas.User = Depends(Auth.get_current_user)):
-    print(current_user)
+@router.delete("/delete", response_model=user_schemas.UserResponse)
+async def delete_user(user_id: int, current_user: user_schemas.User = Depends(Auth.get_current_user)):
     if user_id != current_user.id:
         raise HTTPException(detail="User can delete only yourself", status_code=403)
     user = await user_crud.delete(user_id=user_id)
-    return schemas.UserResponse(msg="Success", user=user)
+    return user_schemas.UserResponse(msg="Success", user=user)
 
 
-@router.post("/token", response_model=schemas.Token)
+@router.post("/token", response_model=token_schemas.Token)
 async def login_for_access_token(
         form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
 ):
@@ -71,9 +70,9 @@ async def login_for_access_token(
     access_token = Auth.create_access_token(
         data={"sub": user.username, ".email": user.email}, expires_delta=access_token_expires
     )
-    return schemas.Token(access_token=access_token, token_type="bearer")
+    return token_schemas.Token(access_token=access_token, token_type="bearer")
 
 
-@router.get("/me", response_model=schemas.User)
-async def get_me(current_user: schemas.User = Depends(Auth.get_current_user)):
+@router.get("/me", response_model=user_schemas.User)
+async def get_me(current_user: user_schemas.User = Depends(Auth.get_current_user)):
     return current_user
