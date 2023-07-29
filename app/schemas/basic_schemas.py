@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 
 from pydantic import BaseModel, ConfigDict
 
@@ -10,6 +10,8 @@ class User(BaseModel):
     hashed_password: str
     email: str
     is_active: bool
+    company: Optional["Company"] = None
+    owner_model: Optional["Owner"] = None
 
 
 class Company(BaseModel):
@@ -17,4 +19,12 @@ class Company(BaseModel):
     id: Optional[int] = None
     name: str
     description: Optional[str] = None
-    owner: Optional[User] = None
+
+    owner: "Owner" = None
+
+
+class Owner(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: Optional[int] = None
+    user: Optional["User"] = None
+    company: Optional[List["Company"]] = []

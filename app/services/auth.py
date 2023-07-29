@@ -4,10 +4,12 @@ from datetime import timedelta, datetime
 
 from fastapi import Depends
 from fastapi.security import HTTPBearer
-from jose.jwt import encode, decode
+
+from jose.jwt import decode
 from jwt import exceptions
 
 from jose import jwt
+from jwt.api_jwt import encode
 from jwt.jwks_client import PyJWKClient
 
 from schemas import user_schemas
@@ -26,7 +28,8 @@ class Auth:
         else:
             expire = datetime.utcnow() + timedelta(minutes=15)
         to_encode.update({"exp": expire})
-        encoded_jwt = encode(to_encode, settings.secret_key,
+        print(to_encode, settings.secret_key, settings.algorithm)
+        encoded_jwt = encode(payload=to_encode, key=settings.secret_key,
                              algorithm=settings.algorithm)
         return encoded_jwt
 

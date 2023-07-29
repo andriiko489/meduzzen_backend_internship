@@ -6,7 +6,9 @@ from typing import Annotated
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 
-from schemas import user_schemas, token_schemas
+from crud.OwnerCRUD import owner_crud
+from models import models
+from schemas import user_schemas, token_schemas, basic_schemas
 from crud.UserCRUD import user_crud
 from services.auth import Auth
 from utils.logger import logger
@@ -33,10 +35,12 @@ async def get_user(user_id: int, current_user: user_schemas.User = Depends(Auth.
 
 @router.post("/add", response_model=user_schemas.UserResponse)
 async def add_user(user: user_schemas.AddUser):
-    user = await user_crud.add(user=user)
-    if not user:
+    db_user: models.User = await user_crud.add(user=user)
+    user = basic_schemas.User(**user.model_dump())
+    if not db_user:
         raise HTTPException(detail="User with this email or username already exist", status_code=418)
-    return user_schemas.UserResponse(msg="Success", user=user)
+    owner_crud.add(basic_schemas.Owner(user=user))
+    return user_schemas.UserResponse(msg="Success", user=db_user)
 
 
 @router.patch("/update", response_model=user_schemas.UserResponse)
@@ -59,7 +63,8 @@ async def delete_user(user_id: int, current_user: user_schemas.User = Depends(Au
 async def login_for_access_token(
         form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
 ):
-    user = await Auth.authenticate_user(form_data.username, form_data.password)
+    user: models.User = await Auth.authenticate_user(form_data.username, form_data.password)
+    print(111, user.email, user.username)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -68,7 +73,7 @@ async def login_for_access_token(
         )
     access_token_expires = timedelta(minutes=settings.access_token_expire_minutes)
     access_token = Auth.create_access_token(
-        data={"sub": user.username, ".email": user.email}, expires_delta=access_token_expires
+        data={"sub": user.username, ".email": "mail"}, expires_delta=access_token_expires
     )
     return token_schemas.Token(access_token=access_token, token_type="bearer")
 
