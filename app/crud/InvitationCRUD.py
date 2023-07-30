@@ -1,5 +1,6 @@
 from typing import Optional
 
+from fastapi import HTTPException
 from sqlalchemy import select, ScalarResult
 
 from crud.BaseCRUD import BaseCRUD
@@ -59,15 +60,27 @@ class InvitationCRUD(BaseCRUD):
     async def add(self, invitation: invitation_schemas.BasicInvitation):
         if await invitation_status(invitation) > 3:
             return await super().add(invitation)
-        return await str_invitation(invitation)
+        raise HTTPException(detail=str_invitation(invitation), status_code=418)
 
     async def delete(self, invitation_id: int):
         return await super().delete(invitation_id)
 
     async def cancel(self, invitation_id: int, current_user: basic_schemas.User):
         invitation = await self.get(invitation_id)
+        if not invitation:
+            return "invitation not exist"
         if invitation.sender_id != current_user.id:
-            return "This user not send this invitation"
+            return "You not sent this invitation"
+        else:
+            await self.delete(invitation_id)
+            return "success"
+
+    async def decline(self, invitation_id: int, current_user: basic_schemas.User):
+        invitation = await self.get(invitation_id)
+        if not invitation:
+            return "invitation not exist"
+        if invitation.receiver_id != current_user.id:
+            return "You not not received this invitation"
         else:
             await self.delete(invitation_id)
             return "success"

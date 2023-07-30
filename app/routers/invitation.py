@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 
 from crud.InvitationCRUD import invitation_crud
 from models import models
-from schemas import user_schemas, basic_schemas, invitation_schemas
+from schemas import user_schemas, invitation_schemas
 from services.auth import Auth
 
 router = APIRouter(
@@ -40,6 +40,11 @@ async def add_user(invitation: invitation_schemas.SendInvitation,
 @router.delete("/cancel")  # , response_model=user_schemas.UserResponse
 async def cancel(invitation_id: int, current_user: user_schemas.User = Depends(Auth.get_current_user)):
     return await invitation_crud.cancel(invitation_id, current_user)
+
+
+@router.delete("/decline")  # , response_model=user_schemas.UserResponse
+async def cancel(invitation_id: int, current_user: user_schemas.User = Depends(Auth.get_current_user)):
+    return await invitation_crud.decline(invitation_id, current_user)
 
 
 @router.get("/get_sent_invitations")
