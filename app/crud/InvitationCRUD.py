@@ -60,7 +60,7 @@ class InvitationCRUD(BaseCRUD):
     async def add(self, invitation: invitation_schemas.BasicInvitation):
         if await invitation_status(invitation) > 3:
             return await super().add(invitation)
-        raise HTTPException(detail=str_invitation(invitation), status_code=418)
+        raise HTTPException(detail=await str_invitation(invitation), status_code=418)
 
     async def delete(self, invitation_id: int):
         return await super().delete(invitation_id)
@@ -68,9 +68,9 @@ class InvitationCRUD(BaseCRUD):
     async def cancel(self, invitation_id: int, current_user: basic_schemas.User):
         invitation = await self.get(invitation_id)
         if not invitation:
-            return "invitation not exist"
+            raise HTTPException(detail="invitation not exist", status_code=418)
         if invitation.sender_id != current_user.id:
-            return "You not sent this invitation"
+            raise HTTPException(detail="You not not received this invitation", status_code=418)
         else:
             await self.delete(invitation_id)
             return "success"
@@ -78,9 +78,9 @@ class InvitationCRUD(BaseCRUD):
     async def decline(self, invitation_id: int, current_user: basic_schemas.User):
         invitation = await self.get(invitation_id)
         if not invitation:
-            return "invitation not exist"
+            raise HTTPException(detail="invitation not exist", status_code=418)
         if invitation.receiver_id != current_user.id:
-            return "You not not received this invitation"
+            raise HTTPException(detail="You not not received this invitation", status_code=418)
         else:
             await self.delete(invitation_id)
             return "success"
