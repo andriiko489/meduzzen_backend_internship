@@ -32,11 +32,14 @@ async def add_user(invitation: invitation_schemas.BasicInvitation,
 async def add_user(invitation: invitation_schemas.SendInvitation,
                    current_user: user_schemas.User = Depends(Auth.get_current_user)):
     invitation = invitation_schemas.BasicInvitation(**invitation.model_dump())
-    print(invitation.model_dump())
     invitation.sender_id = current_user.id
-    print(invitation.model_dump())
     db_invitation: models.Invitation = await invitation_crud.add(invitation=invitation)
     return db_invitation
+
+
+@router.delete("/cancel")  # , response_model=user_schemas.UserResponse
+async def cancel(invitation_id: int, current_user: user_schemas.User = Depends(Auth.get_current_user)):
+    return await invitation_crud.cancel(invitation_id, current_user)
 
 
 @router.get("/get_sent_invitations")

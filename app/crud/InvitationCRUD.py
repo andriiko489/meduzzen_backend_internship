@@ -61,8 +61,16 @@ class InvitationCRUD(BaseCRUD):
             return await super().add(invitation)
         return await str_invitation(invitation)
 
-    async def delete(self, invitation_id: int) -> Optional[models.Invitation]:
+    async def delete(self, invitation_id: int):
         return await super().delete(invitation_id)
+
+    async def cancel(self, invitation_id: int, current_user: basic_schemas.User):
+        invitation = await self.get(invitation_id)
+        if invitation.sender_id != current_user.id:
+            return "This user not send this invitation"
+        else:
+            await self.delete(invitation_id)
+            return "success"
 
     async def get_sent_invitations(self, user_id):
         stmt = select(models.Invitation).where(models.Invitation.sender_id == user_id)
