@@ -24,7 +24,7 @@ async def get_users(current_user: user_schemas.User = Depends(Auth.get_current_u
     return await user_crud.get_users()
 
 
-@router.get("/get")  # , response_model=user_schemas.UserResponse
+@router.get("/get", response_model=user_schemas.UserResponse)
 async def get_user(user_id: int, current_user: user_schemas.User = Depends(Auth.get_current_user)):
     user = await user_crud.get_user(user_id=user_id)
     if not user:
@@ -32,7 +32,7 @@ async def get_user(user_id: int, current_user: user_schemas.User = Depends(Auth.
     return user_schemas.UserResponse(msg="User found", user=user)
 
 
-@router.post("/add")  # , response_model=user_schemas.UserResponse
+@router.post("/add", response_model=user_schemas.UserResponse)
 async def add_user(user: user_schemas.AddUser):
     db_user: models.User = await user_crud.add(user=user)
     if not db_user:
@@ -40,7 +40,7 @@ async def add_user(user: user_schemas.AddUser):
     return user_schemas.UserResponse(msg="Success", user=db_user)
 
 
-@router.patch("/update")  # , response_model=user_schemas.UserResponse
+@router.patch("/update", response_model=user_schemas.UserResponse)
 async def update_user(user: user_schemas.UpdateUser, current_user: user_schemas.User = Depends(Auth.get_current_user)):
     user = await user_crud.update(user=user)
     if not user:
@@ -48,7 +48,7 @@ async def update_user(user: user_schemas.UpdateUser, current_user: user_schemas.
     return user_schemas.UserResponse(msg="Success", user=user)
 
 
-@router.delete("/delete")  # , response_model=user_schemas.UserResponse
+@router.delete("/delete", response_model=user_schemas.UserResponse)
 async def delete_user(user_id: int, current_user: user_schemas.User = Depends(Auth.get_current_user)):
     if user_id != current_user.id:
         raise HTTPException(detail="User can delete only yourself", status_code=403)
@@ -56,7 +56,7 @@ async def delete_user(user_id: int, current_user: user_schemas.User = Depends(Au
     return user_schemas.UserResponse(msg="Success", user=user)
 
 
-@router.get("/owner_of")  # , response_model=user_schemas.UserResponse
+@router.get("/owner_of")
 async def get_owner_of(current_user: user_schemas.User = Depends(Auth.get_current_user)):
     return await user_crud.get_by_owner_of(current_user.id)
 
@@ -79,6 +79,6 @@ async def login_for_access_token(
     return token_schemas.Token(access_token=access_token, token_type="bearer")
 
 
-@router.get("/me")  # , response_model=user_schemas.User
+@router.get("/me", response_model=user_schemas.User)
 async def get_me(current_user: user_schemas.User = Depends(Auth.get_current_user)):
     return current_user
