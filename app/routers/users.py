@@ -6,7 +6,6 @@ from typing import Annotated
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 
-from crud.OwnerCRUD import owner_crud
 from models import models
 from schemas import user_schemas, token_schemas, basic_schemas
 from crud.UserCRUD import user_crud
@@ -36,10 +35,8 @@ async def get_user(user_id: int, current_user: user_schemas.User = Depends(Auth.
 @router.post("/add", response_model=user_schemas.UserResponse)
 async def add_user(user: user_schemas.AddUser):
     db_user: models.User = await user_crud.add(user=user)
-    user = basic_schemas.User(**user.model_dump())
     if not db_user:
         raise HTTPException(detail="User with this email or username already exist", status_code=418)
-    owner_crud.add(basic_schemas.Owner(user=user))
     return user_schemas.UserResponse(msg="Success", user=db_user)
 
 
@@ -64,7 +61,6 @@ async def login_for_access_token(
         form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
 ):
     user: models.User = await Auth.authenticate_user(form_data.username, form_data.password)
-    print(111, user.email, user.username)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
