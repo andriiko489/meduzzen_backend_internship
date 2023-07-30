@@ -47,7 +47,9 @@ class Auth:
         return decoded
 
     async def get_current_user(token: str = Depends(token_auth_scheme)):
+        print(1)
         if not jwt.get_unverified_header(token.credentials) == {"alg": "RS256", "typ": "JWT"}:
+            print(2)
             result = VerifyToken(token.credentials).verify()
             user = await user_crud.get_by_email(result[".email"])
             if not user:
@@ -57,7 +59,9 @@ class Auth:
                 return user
         else:
             result = Auth().decode_access_token(token)
+            print(result)
         user = await user_crud.get_by_email(result[".email"])
+        print(user)
         return user
 
 

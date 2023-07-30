@@ -1,5 +1,7 @@
 from typing import Optional
 
+from sqlalchemy import select
+
 from crud.BaseCRUD import BaseCRUD
 from db import pgdb
 from models import models
@@ -17,6 +19,8 @@ class CompanyCRUD(BaseCRUD):
 
     async def get_companies(self) -> list[models.Company]:
         return await super().get_all()
+
+
 
     async def add(self, company: company_schemas.Company) -> Optional[models.Company]:
         return await super().add(company)

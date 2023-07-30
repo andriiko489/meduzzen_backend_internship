@@ -3,11 +3,11 @@ from typing import Optional
 from sqlalchemy import select
 
 from crud.BaseCRUD import BaseCRUD
+from crud.CompanyCRUD import company_crud
 from db import pgdb
 from models import models
 from schemas import user_schemas
 from services.hasher import Hasher
-
 
 default_session = pgdb.session
 
@@ -31,6 +31,11 @@ class UserCRUD(BaseCRUD):
 
     async def get_users(self) -> list[models.User]:
         return await super().get_all()
+
+    async def get_by_owner_of(self, owner_id: int):
+        stmt = select(models.Company).where(models.Company.owner_id == owner_id)
+        item = (await self.session.execute(stmt)).scalars().all()
+        return item
 
     async def add(self, user: user_schemas.User) -> Optional[models.User]:
         self.schema = user_schemas.AddUser
