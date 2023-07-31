@@ -25,7 +25,7 @@ async def get_admin(admin_id: int, current_user: user_schemas.User = Depends(Aut
 async def set_admin(admin: basic_schemas.BasicAdmin, current_user: user_schemas.User = Depends(Auth.get_current_user)):
     company = await company_crud.get_company(admin.company_id)
     user = await user_crud.get_user(admin.user_id)
-    if company.owner_id != current_user.company_id:
+    if company.owner_id != current_user.id:
         raise HTTPException(detail="Only owner can add admin to company", status_code=403)
     if company.id != user.company_id:
         raise HTTPException(detail="Only member of company can be admin", status_code=403)
