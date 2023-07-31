@@ -31,20 +31,12 @@ async def invitation_status(invitation, session=default_session):
         return 1
 
 
-async def str_invitation(invitation):
-    status = await invitation_status(invitation)
-    if status == 0:
-        return "You cannot send invitation to yourself"
-    elif status == 1:
-        return "Between sender and receiver nobody is owner of selected company"
-    elif status == 2:
-        return "Selected receiver user are owner of company"
-    elif status == 3:
-        return "Selected sender user are owner of company"
-    elif status == 4:
-        return "From owner to user"
-    elif status == 5:
-        return "From user to owner"
+status_dict = {0: "You cannot send invitation to yourself",
+               1: "Between sender and receiver nobody is owner of selected company",
+               2: "Selected receiver user are owner of company",
+               3: "Selected sender user are owner of company",
+               4: "From owner to user",
+               5: "From user to owner"}
 
 
 class InvitationCRUD(BaseCRUD):
@@ -58,9 +50,10 @@ class InvitationCRUD(BaseCRUD):
         return await super().get_all()
 
     async def add(self, invitation: invitation_schemas.BasicInvitation):
-        if await invitation_status(invitation) > 3:
+        status = await invitation_status(invitation)
+        if status > 3:
             return await super().add(invitation)
-        raise HTTPException(detail=await str_invitation(invitation), status_code=418)
+        raise HTTPException(detail=status_dict[status], status_code=418)
 
     async def delete(self, invitation_id: int):
         return await super().delete(invitation_id)
