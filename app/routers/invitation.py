@@ -37,12 +37,12 @@ async def add_user(invitation: invitation_schemas.SendInvitation,
     return db_invitation
 
 
-@router.delete("/cancel")  # , response_model=user_schemas.UserResponse
+@router.delete("/cancel")
 async def cancel(invitation_id: int, current_user: user_schemas.User = Depends(Auth.get_current_user)):
     return await invitation_crud.cancel(invitation_id, current_user)
 
 
-@router.delete("/decline")  # , response_model=user_schemas.UserResponse
+@router.delete("/decline")
 async def cancel(invitation_id: int, current_user: user_schemas.User = Depends(Auth.get_current_user)):
     return await invitation_crud.decline(invitation_id, current_user)
 
