@@ -4,39 +4,43 @@ from fastapi import HTTPException
 from sqlalchemy import select
 
 from crud.BaseCRUD import BaseCRUD
-from crud.UserCRUD import user_crud
 from db import pgdb
 from models import models
 from schemas import basic_schemas, invitation_schemas
+from services.auth import Auth
 
 default_session = pgdb.session
 
 
-async def invitation_status(invitation, session=default_session):
+async def invitation_status(invitation):
     if invitation.sender_id == invitation.receiver_id:
         return 0
-    sender_owner_of = await user_crud.get_by_owner_of(invitation.sender_id)
-    receiver_owner_of = await user_crud.get_by_owner_of(invitation.receiver_id)
-    stmt = select(models.Company).where(models.Company.id == invitation.company_id)
-    company = (await session.execute(stmt)).scalars().first()  # .
-    if company in sender_owner_of:
-        if receiver_owner_of:
-            return 2
-        return 4
-    elif company in receiver_owner_of:
-        if sender_owner_of:
-            return 3
-        return 5
+    sender_role = await Auth.get_role(invitation.sender_id, invitation.company_id)
+    receiver_role = await Auth.get_role(invitation.receiver_id, invitation.company_id)
+    if sender_role == -1:
+        return 6
+    if receiver_role == -1:
+        return 7
+    if sender_role == 0:
+        if receiver_role > 1:
+            return 5
+        return 2
+    elif receiver_role == 0:
+        if sender_role > 1:
+            return 4
+        return 3
     else:
         return 1
 
 
 invitation_status_dict = {0: "You cannot send invitation to yourself",
-                          1: "Between sender and receiver nobody is owner of selected company",
-                          2: "Selected receiver user are owner of company",
-                          3: "Selected sender user are owner of company",
+                          1: "Between sender and receiver both have company",
+                          2: "Receiver cannot answer to this invitation",
+                          3: "You cannot send this invitation",
                           4: "From owner to user",
-                          5: "From user to owner"}
+                          5: "From user to owner",
+                          6: "Sender have another company",
+                          7: "Receiver have another company"}
 
 
 class Status:
@@ -56,7 +60,7 @@ class InvitationCRUD(BaseCRUD):
 
     async def add(self, invitation: invitation_schemas.BasicInvitation):
         status = await invitation_status(invitation)
-        if status > 3:
+        if status in [4, 5]:
             return await super().add(invitation)
         raise HTTPException(detail=invitation_status_dict[status], status_code=418)
 
