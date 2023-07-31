@@ -20,7 +20,10 @@ class CompanyCRUD(BaseCRUD):
     async def get_companies(self) -> list[models.Company]:
         return await super().get_all()
 
-
+    async def get_members(self, company_id: int):
+        stmt = select(models.User).where(models.User.company_id == company_id)
+        items = (await self.session.execute(stmt)).scalars().all()
+        return items
 
     async def add(self, company: company_schemas.Company) -> Optional[models.Company]:
         return await super().add(company)

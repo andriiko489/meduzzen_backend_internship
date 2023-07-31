@@ -23,6 +23,10 @@ async def get_companies(company_id: int, current_user: user_schemas.User = Depen
         raise HTTPException(detail="Company not found", status_code=404)
     return company
 
+@router.get("/members")
+async def get_members(company_id: int, current_user: user_schemas.User = Depends(Auth.get_current_user)):
+    members = await company_crud.get_members(company_id)
+    return members
 
 @router.post("/add")
 async def add_company(company: company_schemas.AddCompany,
