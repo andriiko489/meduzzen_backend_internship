@@ -7,7 +7,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 
 from models import models
-from schemas import user_schemas, token_schemas, basic_schemas
+from schemas import user_schemas, token_schemas
 from crud.UserCRUD import user_crud
 from services.auth import Auth
 from utils.logger import logger
@@ -59,6 +59,11 @@ async def delete_user(user_id: int, current_user: user_schemas.User = Depends(Au
 @router.get("/owner_of")
 async def get_owner_of(current_user: user_schemas.User = Depends(Auth.get_current_user)):
     return await user_crud.get_by_owner_of(current_user.id)
+
+
+@router.post("/leave_company")
+async def leave_company(current_user: user_schemas.User = Depends(Auth.get_current_user)):
+    return await user_crud.set_company(None, current_user.id)
 
 
 @router.post("/token", response_model=token_schemas.Token)
