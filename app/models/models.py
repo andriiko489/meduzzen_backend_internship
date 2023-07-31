@@ -26,6 +26,7 @@ class User(Base):
                                                                           foreign_keys="Invitation.sender_id")
     received_invitations: Mapped[Optional[List["Invitation"]]] = relationship(back_populates="receiver",
                                                                               foreign_keys="Invitation.receiver_id")
+    admin_model: Mapped[Optional["Admin"]] = relationship(back_populates="user", foreign_keys="Admin.user_id")
 
 
 class Company(Base):
@@ -40,7 +41,10 @@ class Company(Base):
 
     members: Mapped[List["User"]] = relationship(back_populates="company", foreign_keys="User.company_id")
 
-    invitations: Mapped[List["Invitation"]] = relationship(back_populates="company", foreign_keys="Invitation.company_id")
+    invitations: Mapped[List["Invitation"]] = relationship(back_populates="company",
+                                                           foreign_keys="Invitation.company_id")
+
+    admins: Mapped[List["Admin"]] = relationship(back_populates="company", foreign_keys="Admin.company_id")
 
 
 class Invitation(Base):
@@ -55,3 +59,14 @@ class Invitation(Base):
 
     company_id: Mapped[int] = mapped_column(ForeignKey("companies.id"))
     company: Mapped["Company"] = relationship(back_populates="invitations", foreign_keys=company_id)
+
+
+class Admin(Base):
+    __tablename__ = "admins"
+    id = Column(Integer, primary_key=True, index=True)
+
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    user: Mapped["User"] = relationship(back_populates="admin_model", foreign_keys=user_id)
+
+    company_id: Mapped[int] = mapped_column(ForeignKey("companies.id"))
+    company: Mapped["Company"] = relationship(back_populates="admins", foreign_keys=company_id)
