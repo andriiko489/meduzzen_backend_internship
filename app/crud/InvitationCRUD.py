@@ -31,12 +31,17 @@ async def invitation_status(invitation, session=default_session):
         return 1
 
 
-status_dict = {0: "You cannot send invitation to yourself",
-               1: "Between sender and receiver nobody is owner of selected company",
-               2: "Selected receiver user are owner of company",
-               3: "Selected sender user are owner of company",
-               4: "From owner to user",
-               5: "From user to owner"}
+invitation_status_dict = {0: "You cannot send invitation to yourself",
+                          1: "Between sender and receiver nobody is owner of selected company",
+                          2: "Selected receiver user are owner of company",
+                          3: "Selected sender user are owner of company",
+                          4: "From owner to user",
+                          5: "From user to owner"}
+
+
+class Status:
+    success_canceled = "Invitation canceled successful"
+    success_declined = "Invitation declined successful"
 
 
 class InvitationCRUD(BaseCRUD):
@@ -53,7 +58,7 @@ class InvitationCRUD(BaseCRUD):
         status = await invitation_status(invitation)
         if status > 3:
             return await super().add(invitation)
-        raise HTTPException(detail=status_dict[status], status_code=418)
+        raise HTTPException(detail=invitation_status_dict[status], status_code=418)
 
     async def delete(self, invitation_id: int):
         return await super().delete(invitation_id)
@@ -66,7 +71,7 @@ class InvitationCRUD(BaseCRUD):
             raise HTTPException(detail="You not not received this invitation", status_code=418)
         else:
             await self.delete(invitation_id)
-            return "success"
+            return Status.success_canceled
 
     async def decline(self, invitation_id: int, current_user: basic_schemas.User):
         invitation = await self.get(invitation_id)
@@ -76,7 +81,7 @@ class InvitationCRUD(BaseCRUD):
             raise HTTPException(detail="You not not received this invitation", status_code=418)
         else:
             await self.delete(invitation_id)
-            return "success"
+            return Status.success_declined
 
     async def get_sent_invitations(self, user_id):
         stmt = select(models.Invitation).where(models.Invitation.sender_id == user_id)
