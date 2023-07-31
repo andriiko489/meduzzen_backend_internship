@@ -28,7 +28,6 @@ class User(Base):
                                                                               foreign_keys="Invitation.receiver_id")
     admin_model: Mapped[Optional["Admin"]] = relationship(back_populates="user", foreign_keys="Admin.user_id")
 
-
 class Company(Base):
     __tablename__ = "companies"
 

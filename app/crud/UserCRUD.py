@@ -3,7 +3,6 @@ from typing import Optional
 from sqlalchemy import select
 
 from crud.BaseCRUD import BaseCRUD
-from crud.CompanyCRUD import company_crud
 from db import pgdb
 from models import models
 from schemas import user_schemas
