@@ -48,7 +48,6 @@ async def add_company(company: company_schemas.AddCompany,
 async def update_company(company: company_schemas.RequestUpdateCompany,
                          current_user: user_schemas.User = Depends(Auth.get_current_user)):
     role = await Auth.get_role(user_id=current_user.id, company_id=company.id)
-    print(role)
     if role < 2:
         raise HTTPException(detail="Only owner and admins can do it", status_code=403)
     company = company_schemas.UpdateCompany(**company.model_dump())
@@ -67,7 +66,6 @@ async def kick_user(company_id: int, user_id: int, current_user: user_schemas.Us
 
     current_user_role = await Auth.get_role(user_id=current_user.id, company_id=company_id)
     kicked_user_role = await Auth.get_role(user_id=user_id, company_id=company_id)
-    print(current_user_role, kicked_user_role)
     if kicked_user_role < 1:
         raise HTTPException(detail="This user are not member of this company", status_code=403)
     if current_user_role < 2:

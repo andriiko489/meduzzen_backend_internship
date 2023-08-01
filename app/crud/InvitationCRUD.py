@@ -102,9 +102,9 @@ class InvitationCRUD(BaseCRUD):
     async def accept_invitation(self, invitation_id: int):
         invitation = await super().get(invitation_id)
         status = await invitation_status(await self.get(invitation_id), self.session)
-        if status == 4:
+        if status == InvitationStatus.TO_USER:
             stmt = select(models.User).where(models.User.id == invitation.receiver_id)
-        else:
+        elif status == InvitationStatus.TO_OWNER:
             stmt = select(models.User).where(models.User.id == invitation.sender_id)
         db_user = (await self.session.execute(stmt)).scalars().first()
         db_user.company_id = invitation.company_id
