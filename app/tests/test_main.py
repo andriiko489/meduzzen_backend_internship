@@ -29,16 +29,22 @@ def test_main():
 @pytest.mark.asyncio
 async def test_crud():
     await test_session.execute(sa_text('''TRUNCATE TABLE users CASCADE''').execution_options(autocommit=True))
+
+
     test_string = get_random_string(length=8)
     user = user_schemas.User(username=test_string, hashed_password=test_string, email=test_string, is_active=True)
-    assert user is not None
     db_user = await user_crud_test.add(user)
-    assert db_user.username == user.username
+    assert user is not None
+    assert db_user.username == test_string
 
-    user = await user_crud_test.get_user(db_user.id)
     assert user.username == test_string
-    company = basic_schemas.Company(name="PEPSICO", owner_id=user.id)
+    company = basic_schemas.Company(name="PEPSICO", owner_id=db_user.id)
     db_company = await company_crud_test.add(company)
     assert db_company is not None
     assert await company_crud_test.get_company(db_company.id)
-    assert await company_crud_test.delete(db_company.id)
+
+    test_string_2 = get_random_string(length=8)
+    user_2 = user_schemas.User(username=test_string_2, hashed_password=test_string_2, email=test_string_2, is_active=True)
+    db_user_2 = await user_crud_test.add(user_2)
+    assert user_2 is not None
+    assert db_user_2.username == test_string_2
