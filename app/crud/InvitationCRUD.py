@@ -5,10 +5,10 @@ from fastapi import HTTPException
 from sqlalchemy import select
 
 from crud.BaseCRUD import BaseCRUD
+from crud.UserCRUD import user_crud
 from db import pgdb
 from models import models
 from schemas import basic_schemas, invitation_schemas
-from services.auth import Auth
 
 default_session = pgdb.session
 
@@ -16,8 +16,8 @@ default_session = pgdb.session
 async def invitation_status(invitation, session=default_session):
     if invitation.sender_id == invitation.receiver_id:
         return InvitationStatus.CANNOT_SEND_TO_YOURSELF
-    sender_role = await Auth.get_role(invitation.sender_id, invitation.company_id, session)
-    receiver_role = await Auth.get_role(invitation.receiver_id, invitation.company_id, session)
+    sender_role = await user_crud.get_role(invitation.sender_id, invitation.company_id)
+    receiver_role = await user_crud.get_role(invitation.receiver_id, invitation.company_id)
     if sender_role == -1:
         return InvitationStatus.SENDER_ANOTHER_COMPANY
     if receiver_role == -1:
