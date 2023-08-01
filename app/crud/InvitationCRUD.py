@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Optional
 
 from fastapi import HTTPException
@@ -14,29 +15,29 @@ default_session = pgdb.session
 
 async def invitation_status(invitation, session=default_session):
     if invitation.sender_id == invitation.receiver_id:
-        return 0
+        return InvitationStatus.CANNOT_SEND_TO_YOURSELF
     sender_owner_of = await user_crud.get_by_owner_of(invitation.sender_id)
     receiver_owner_of = await user_crud.get_by_owner_of(invitation.receiver_id)
     stmt = select(models.Company).where(models.Company.id == invitation.company_id)
     company = (await session.execute(stmt)).scalars().first()  # .
     if company in sender_owner_of:
         if receiver_owner_of:
-            return 2
-        return 4
+            return InvitationStatus.BOTH_OWNERS
+        return InvitationStatus.TO_USER
     elif company in receiver_owner_of:
         if sender_owner_of:
-            return 3
-        return 5
+            return InvitationStatus.BOTH_OWNERS
+        return InvitationStatus.TO_OWNER
     else:
-        return 1
+        return InvitationStatus.NOBODY_OWNER
 
 
-invitation_status_dict = {0: "You cannot send invitation to yourself",
-                          1: "Between sender and receiver nobody is owner of selected company",
-                          2: "Selected receiver user are owner of company",
-                          3: "Selected sender user are owner of company",
-                          4: "From owner to user",
-                          5: "From user to owner"}
+class InvitationStatus(Enum):
+    CANNOT_SEND_TO_YOURSELF = "You cannot send invitation to yourself"
+    NOBODY_OWNER = "Between sender and receiver nobody is owner of selected company"
+    BOTH_OWNERS = "Both users are owners of companies"
+    TO_USER = "From owner to user"
+    TO_OWNER = "From user to owner"
 
 
 class Status:
@@ -56,9 +57,9 @@ class InvitationCRUD(BaseCRUD):
 
     async def add(self, invitation: invitation_schemas.BasicInvitation):
         status = await invitation_status(invitation)
-        if status > 3:
+        if status in [InvitationStatus.TO_USER, InvitationStatus.TO_OWNER]:
             return await super().add(invitation)
-        raise HTTPException(detail=invitation_status_dict[status], status_code=418)
+        raise HTTPException(detail=status.value, status_code=418)
 
     async def delete(self, invitation_id: int):
         return await super().delete(invitation_id)
