@@ -5,7 +5,7 @@ from sqlalchemy import select
 from crud.BaseCRUD import BaseCRUD
 from db import pgdb
 from models import models
-from schemas import user_schemas
+from schemas import user_schemas, basic_schemas
 from services.hasher import Hasher
 
 default_session = pgdb.session
@@ -36,7 +36,7 @@ class UserCRUD(BaseCRUD):
         item = (await self.session.execute(stmt)).scalars().all()
         return item
 
-    async def add(self, user: user_schemas.User) -> Optional[models.User]:
+    async def add(self, user: basic_schemas.User) -> Optional[models.User]:
         self.schema = user_schemas.AddUser
         user.hashed_password = Hasher.get_password_hash(user.hashed_password)
         return await super().add(user)
