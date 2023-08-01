@@ -12,12 +12,12 @@ from jose import jwt, ExpiredSignatureError
 from jwt.api_jwt import encode
 from jwt.jwks_client import PyJWKClient
 
-from crud.CompanyCRUD import company_crud
+from crud.CompanyCRUD import company_crud, CompanyCRUD
 from models import models
 from schemas import user_schemas
 from services.hasher import Hasher
 from utils.config import settings
-from crud.UserCRUD import user_crud
+from crud.UserCRUD import user_crud, UserCRUD
 
 token_auth_scheme = HTTPBearer()
 
@@ -64,9 +64,9 @@ class Auth:
         user = await user_crud.get_by_email(result[".email"])
         return user
 
-    async def get_role(user_id: int, company_id: int):
-        company = await company_crud.get_company(company_id)
-        user = await user_crud.get_user(user_id)
+    async def get_role(user_id: int, company_id: int, session):
+        company = await CompanyCRUD(session).get_company(company_id)
+        user = await UserCRUD(session).get_user(user_id)
         if user.company_id is None:
             return 0  # user
         if company.id != user.company_id:

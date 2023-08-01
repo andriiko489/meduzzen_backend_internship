@@ -13,11 +13,11 @@ from services.auth import Auth
 default_session = pgdb.session
 
 
-async def invitation_status(invitation):
+async def invitation_status(invitation, session=default_session):
     if invitation.sender_id == invitation.receiver_id:
         return InvitationStatus.CANNOT_SEND_TO_YOURSELF
-    sender_role = await Auth.get_role(invitation.sender_id, invitation.company_id)
-    receiver_role = await Auth.get_role(invitation.receiver_id, invitation.company_id)
+    sender_role = await Auth.get_role(invitation.sender_id, invitation.company_id, session)
+    receiver_role = await Auth.get_role(invitation.receiver_id, invitation.company_id, session)
     if sender_role == -1:
         return InvitationStatus.SENDER_ANOTHER_COMPANY
     if receiver_role == -1:
@@ -61,7 +61,7 @@ class InvitationCRUD(BaseCRUD):
         return await super().get_all()
 
     async def add(self, invitation: invitation_schemas.BasicInvitation):
-        status = await invitation_status(invitation)
+        status = await invitation_status(invitation, self.session)
         if status in [InvitationStatus.TO_OWNER, InvitationStatus.TO_USER]:
             return await super().add(invitation)
         raise HTTPException(detail=status.value, status_code=418)
@@ -101,7 +101,7 @@ class InvitationCRUD(BaseCRUD):
 
     async def accept_invitation(self, invitation_id: int):
         invitation = await super().get(invitation_id)
-        status = await invitation_status(await self.get(invitation_id))
+        status = await invitation_status(await self.get(invitation_id), self.session)
         if status == 4:
             stmt = select(models.User).where(models.User.id == invitation.receiver_id)
         else:
