@@ -5,7 +5,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from main import app
-from schemas import user_schemas, company_schemas
+from schemas import user_schemas,  basic_schemas
 
 from tests.connect_to_testdb import user_crud_test, company_crud_test, test_session
 from sqlalchemy.sql import text as sa_text
@@ -34,11 +34,10 @@ async def test_crud():
     assert user is not None
     db_user = await user_crud_test.add(user)
     assert db_user.username == user.username
-    assert await user_crud_test.get_user(db_user.id)
-    assert await user_crud_test.delete(db_user.id)
 
     user = await user_crud_test.get_user(db_user.id)
-    company = company_schemas.Company(name="PEPSICO", owner=user)
+    assert user.username == test_string
+    company = basic_schemas.Company(name="PEPSICO", owner_id=user.id)
     db_company = await company_crud_test.add(company)
     assert db_company is not None
     assert await company_crud_test.get_company(db_company.id)
