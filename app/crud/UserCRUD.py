@@ -48,9 +48,8 @@ class UserCRUD(BaseCRUD):
         await super().update(user)
         return await self.get(user.id)  # it needeed because UserUpdate have email = None
 
-    async def set_company(self, company_id, user_id):
-        stmt = select(models.User).where(models.User.id == user_id)
-        db_user = (await self.session.execute(stmt)).scalars().first()
+    async def set_company(self, company_id: int, user_id: int):
+        db_user = await self.get_user(user_id)
         db_user.company_id = company_id
         self.session.add(db_user)
         await self.session.commit()
