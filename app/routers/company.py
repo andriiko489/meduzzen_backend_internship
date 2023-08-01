@@ -1,8 +1,9 @@
 from fastapi import APIRouter, HTTPException, Depends
 
+from crud.AdminCRUD import admin_crud
 from crud.CompanyCRUD import company_crud
 from crud.UserCRUD import user_crud
-from schemas import company_schemas, user_schemas
+from schemas import company_schemas, user_schemas, basic_schemas
 from services.auth import Auth
 from utils.logger import logger
 
@@ -34,10 +35,12 @@ async def get_members(company_id: int, current_user: user_schemas.User = Depends
 @router.post("/add")
 async def add_company(company: company_schemas.AddCompany,
                       current_user: user_schemas.User = Depends(Auth.get_current_user)):
-    company = company_schemas.Company(**company.model_dump())
+    company = basic_schemas.Company(**company.model_dump())
+    company.owner_id = current_user.id
     company = await company_crud.add(company=company)
     if not company:
         raise HTTPException(status_code=418)
+    await user_crud.set_company(company_id=company.id, user_id=current_user.id)
     return company
 
 
@@ -45,9 +48,9 @@ async def add_company(company: company_schemas.AddCompany,
 async def update_company(company: company_schemas.RequestUpdateCompany,
                          current_user: user_schemas.User = Depends(Auth.get_current_user)):
     role = await Auth.get_role(user_id=current_user.id, company_id=company.id)
+    print(role)
     if role < 2:
         raise HTTPException(detail="Only owner and admins can do it", status_code=403)
-
     company = company_schemas.UpdateCompany(**company.model_dump())
     company.owner_id = (await company_crud.get_company(company_id=company.id)).owner_id
     company = await company_crud.update(company=company)
@@ -71,9 +74,9 @@ async def kick_user(company_id: int, user_id: int, current_user: user_schemas.Us
         raise HTTPException(detail="Only owner and admins can do it", status_code=403)
     if current_user_role < kicked_user_role:
         raise HTTPException(detail="Kicked user have too high role", status_code=403)
-    user = await user_crud.get_user(user_id)
-    if user.company_id != company_id:
-        HTTPException(detail="Selected user are not member of company", status_code=404)
+    if kicked_user_role > 1:
+        admin = await admin_crud.get_by_user_id(user_id=user_id)
+        admin_crud.delete(admin_id=admin.id)
     return await user_crud.set_company(None, user_id)
 
 

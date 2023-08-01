@@ -20,7 +20,7 @@ class Company(BaseModel):
     id: Optional[int] = None
     name: str
     description: Optional[str] = None
-    owner_id: int
+    owner_id: Optional[int] = None
 
 
 class Invitation(BaseModel):
