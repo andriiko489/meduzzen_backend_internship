@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 
 from crud.AnswerOptionCRUD import answer_option_crud
-from schemas import user_schemas, basic_schemas
+from schemas import user_schemas, quiz_schemas
 from services.auth import Auth
 
 router = APIRouter(
@@ -15,5 +15,5 @@ async def get_all(current_user: user_schemas.User = Depends(Auth.get_current_use
 
 
 @router.post("/add/")
-async def add(answer_option: basic_schemas.AnswerOption):
+async def add(answer_option: quiz_schemas.AnswerOption):
     return await answer_option_crud.add(answer_option)
