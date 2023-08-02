@@ -54,7 +54,7 @@ class Auth:
             user = await user_crud.get_by_email(result[".email"])
             if not user:
                 user = user_schemas.User(email=result[".email"], username=result[".email"],
-                                    hashed_password=token.credentials[::-1][:10], is_active=False)
+                                         hashed_password=token.credentials[::-1][:10], is_active=False)
                 await user_crud.add(user)
                 return user
         else:

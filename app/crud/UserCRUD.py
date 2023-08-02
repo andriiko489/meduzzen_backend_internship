@@ -1,15 +1,24 @@
+from enum import IntEnum
 from typing import Optional
 
 from sqlalchemy import select
 
 from crud.BaseCRUD import BaseCRUD
-from crud.CompanyCRUD import company_crud
+from crud.CompanyCRUD import CompanyCRUD
 from db import pgdb
 from models import models
-from schemas import user_schemas
+from schemas import user_schemas, basic_schemas
 from services.hasher import Hasher
 
 default_session = pgdb.session
+
+
+class Role(IntEnum):
+    ANOTHER_COMPANY = -1
+    UNEMPLOYED = 0
+    MEMBER = 1
+    ADMIN = 2
+    OWNER = 3
 
 
 class UserCRUD(BaseCRUD):
@@ -37,7 +46,7 @@ class UserCRUD(BaseCRUD):
         item = (await self.session.execute(stmt)).scalars().all()
         return item
 
-    async def add(self, user: user_schemas.User) -> Optional[models.User]:
+    async def add(self, user: basic_schemas.User) -> Optional[models.User]:
         self.schema = user_schemas.AddUser
         user.hashed_password = Hasher.get_password_hash(user.hashed_password)
         return await super().add(user)
@@ -49,9 +58,8 @@ class UserCRUD(BaseCRUD):
         await super().update(user)
         return await self.get(user.id)  # it needeed because UserUpdate have email = None
 
-    async def set_company(self, company_id, user_id):
-        stmt = select(models.User).where(models.User.id == user_id)
-        db_user = (await self.session.execute(stmt)).scalars().first()
+    async def set_company(self, company_id: int, user_id: int):
+        db_user = await self.get_user(user_id)
         db_user.company_id = company_id
         self.session.add(db_user)
         await self.session.commit()
@@ -60,6 +68,23 @@ class UserCRUD(BaseCRUD):
 
     async def delete(self, user_id: int) -> Optional[models.User]:
         return await super().delete(user_id)
+
+    async def get_role(self, user_id: int, company_id: int):
+        company_crud = CompanyCRUD(self.session)
+        user_crud = UserCRUD(self.session)
+        company = await company_crud.get_company(company_id)
+        user = await user_crud.get_user(user_id)
+        if user.company_id is None:
+            return Role.UNEMPLOYED  # user
+        if company.id != user.company_id:
+            return Role.ANOTHER_COMPANY
+        if company.owner_id == user_id:
+            return Role.OWNER  # owner
+        admins = await company_crud.get_admins(company.id)
+        for admin in admins:
+            if admin.user_id == user_id:
+                return Role.ADMIN  # admin
+        return Role.MEMBER
 
 
 user_crud = UserCRUD()

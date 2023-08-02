@@ -12,7 +12,7 @@ class User(BaseModel):
     hashed_password: str
     email: str
     is_active: bool
-    company_id: int
+    company_id: Optional[int] = None
 
 
 class Company(BaseModel):
@@ -20,10 +20,7 @@ class Company(BaseModel):
     id: Optional[int] = None
     name: str
     description: Optional[str] = None
-    owner: "User"
-
-
-
+    owner_id: Optional[int] = None
 
 
 class Invitation(BaseModel):
@@ -32,3 +29,16 @@ class Invitation(BaseModel):
     sender_id: Optional[int] = None
     receiver_id: int
     company_id: int
+
+
+class Admin(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: Optional[int] = None
+    company_id: int
+    user_id: int
+
+
+class BasicAdmin(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    company_id: int
+    user_id: int

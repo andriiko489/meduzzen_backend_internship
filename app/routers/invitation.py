@@ -21,15 +21,8 @@ async def get_user(invitation_id: int, current_user: user_schemas.User = Depends
     return invitation
 
 
-@router.post("/add")
-async def add_user(invitation: invitation_schemas.BasicInvitation,
-                   current_user: user_schemas.User = Depends(Auth.get_current_user)):
-    db_invitation: models.Invitation = await invitation_crud.add(invitation=invitation)
-    return db_invitation
-
-
 @router.post("/send")
-async def add_user(invitation: invitation_schemas.SendInvitation,
+async def send(invitation: invitation_schemas.SendInvitation,
                    current_user: user_schemas.User = Depends(Auth.get_current_user)):
     invitation = invitation_schemas.BasicInvitation(**invitation.model_dump())
     invitation.sender_id = current_user.id

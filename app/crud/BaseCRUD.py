@@ -2,8 +2,6 @@ from sqlalchemy import select
 
 from typing import TypeVar, Generic
 
-from schemas import user_schemas
-
 T = TypeVar('T')
 
 

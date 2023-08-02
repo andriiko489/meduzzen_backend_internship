@@ -1,12 +1,6 @@
 from typing import Optional
 
-from fastapi import HTTPException
-from pydantic import BaseModel, ConfigDict, model_validator
-
-from crud.BaseCRUD import BaseCRUD
-from db import pgdb
-from models import models
-from schemas.basic_schemas import Company
+from pydantic import BaseModel, ConfigDict
 
 
 class AddCompany(BaseModel):
@@ -23,13 +17,3 @@ class RequestUpdateCompany(BaseModel):
 
 class UpdateCompany(RequestUpdateCompany):
     owner_id: Optional[int] = None
-
-    @model_validator(mode='after')
-    async def validate_its_owner_of_company(self):
-        company = (
-            await BaseCRUD(schema=Company, model=models.Company, session=pgdb.session).get(self.id))
-        if company is None:
-            raise HTTPException(detail="Company with this id doesnt exist", status_code=404)
-        if self.owner_id != company.owner_id:
-            raise HTTPException(detail="This user not owner of this company", status_code=403)
-        return self

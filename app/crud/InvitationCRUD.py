@@ -2,7 +2,7 @@ from enum import Enum
 from typing import Optional
 
 from fastapi import HTTPException
-from sqlalchemy import select, ScalarResult
+from sqlalchemy import select
 
 from crud.BaseCRUD import BaseCRUD
 from crud.UserCRUD import user_crud
@@ -16,31 +16,36 @@ default_session = pgdb.session
 async def invitation_status(invitation, session=default_session):
     if invitation.sender_id == invitation.receiver_id:
         return InvitationStatus.CANNOT_SEND_TO_YOURSELF
-    sender_owner_of = await user_crud.get_by_owner_of(invitation.sender_id)
-    receiver_owner_of = await user_crud.get_by_owner_of(invitation.receiver_id)
-    stmt = select(models.Company).where(models.Company.id == invitation.company_id)
-    company = (await session.execute(stmt)).scalars().first()  # .
-    if company in sender_owner_of:
-        if receiver_owner_of:
-            return InvitationStatus.BOTH_OWNERS
-        return InvitationStatus.TO_USER
-    elif company in receiver_owner_of:
-        if sender_owner_of:
-            return InvitationStatus.BOTH_OWNERS
-        return InvitationStatus.TO_OWNER
+    sender_role = await user_crud.get_role(invitation.sender_id, invitation.company_id)
+    receiver_role = await user_crud.get_role(invitation.receiver_id, invitation.company_id)
+    if sender_role == -1:
+        return InvitationStatus.SENDER_ANOTHER_COMPANY
+    if receiver_role == -1:
+        return InvitationStatus.RECEIVER_ANOTHER_COMPANY
+    if sender_role == 0:
+        if receiver_role > 1:
+            return InvitationStatus.TO_OWNER
+        return InvitationStatus.RECEIVER_CANNOT_ANSWER
+    elif receiver_role == 0:
+        if sender_role > 1:
+            return InvitationStatus.TO_USER
+        return InvitationStatus.YOU_CANNOT_SEND
     else:
-        return InvitationStatus.NOBODY_OWNER
+        return InvitationStatus.BOTH_HAVE_COMPANIES
 
 
 class InvitationStatus(Enum):
     CANNOT_SEND_TO_YOURSELF = "You cannot send invitation to yourself"
-    NOBODY_OWNER = "Between sender and receiver nobody is owner of selected company"
-    BOTH_OWNERS = "Both users are owners of companies"
+    BOTH_HAVE_COMPANIES = "Between sender and receiver both have company"
+    RECEIVER_CANNOT_ANSWER = "Receiver cannot answer to this invitation"
+    YOU_CANNOT_SEND = "You cannot send this invitation"
     TO_USER = "From owner to user"
     TO_OWNER = "From user to owner"
+    SENDER_ANOTHER_COMPANY = "Sender have another company"
+    RECEIVER_ANOTHER_COMPANY = "Receiver have another company"
 
 
-class Status:
+class ResponseStatus:
     success_canceled = "Invitation canceled successful"
     success_declined = "Invitation declined successful"
 
@@ -56,8 +61,8 @@ class InvitationCRUD(BaseCRUD):
         return await super().get_all()
 
     async def add(self, invitation: invitation_schemas.BasicInvitation):
-        status = await invitation_status(invitation)
-        if status in [InvitationStatus.TO_USER, InvitationStatus.TO_OWNER]:
+        status = await invitation_status(invitation, self.session)
+        if status in [InvitationStatus.TO_OWNER, InvitationStatus.TO_USER]:
             return await super().add(invitation)
         raise HTTPException(detail=status.value, status_code=418)
 
@@ -72,7 +77,7 @@ class InvitationCRUD(BaseCRUD):
             raise HTTPException(detail="You not not received this invitation", status_code=418)
         else:
             await self.delete(invitation_id)
-            return Status.success_canceled
+            return ResponseStatus.success_canceled
 
     async def decline(self, invitation_id: int, current_user: basic_schemas.User):
         invitation = await self.get(invitation_id)
@@ -82,7 +87,7 @@ class InvitationCRUD(BaseCRUD):
             raise HTTPException(detail="You not not received this invitation", status_code=418)
         else:
             await self.delete(invitation_id)
-            return Status.success_declined
+            return ResponseStatus.success_declined
 
     async def get_sent_invitations(self, user_id):
         stmt = select(models.Invitation).where(models.Invitation.sender_id == user_id)
@@ -96,10 +101,10 @@ class InvitationCRUD(BaseCRUD):
 
     async def accept_invitation(self, invitation_id: int):
         invitation = await super().get(invitation_id)
-        status = await invitation_status(await self.get(invitation_id))
-        if status == 4:
+        status = await invitation_status(await self.get(invitation_id), self.session)
+        if status == InvitationStatus.TO_USER:
             stmt = select(models.User).where(models.User.id == invitation.receiver_id)
-        else:
+        elif status == InvitationStatus.TO_OWNER:
             stmt = select(models.User).where(models.User.id == invitation.sender_id)
         db_user = (await self.session.execute(stmt)).scalars().first()
         db_user.company_id = invitation.company_id
