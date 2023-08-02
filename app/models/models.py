@@ -110,8 +110,8 @@ class Question(Base):
 
     text = Column(String)
 
-    quiz_id: Mapped[int] = mapped_column(ForeignKey("quizzes.id"))
-    quiz: Mapped["Quiz"] = relationship(back_populates="questions", foreign_keys=quiz_id)
+    quiz_id: Mapped[Optional[int]] = mapped_column(ForeignKey("quizzes.id"))
+    quiz: Mapped[Optional["Quiz"]] = relationship(back_populates="questions", foreign_keys=quiz_id)
 
     answer_options: Mapped[List["AnswerOption"]] = relationship(back_populates="question",
                                                                 foreign_keys="AnswerOption.question_id")
@@ -123,5 +123,5 @@ class AnswerOption(Base):
 
     text = Column(String)
 
-    question_id: Mapped[int] = mapped_column(ForeignKey("questions.id"))
-    question: Mapped["Question"] = relationship(back_populates="answer_options", foreign_keys=question_id)
+    question_id: Mapped[Optional[int]] = mapped_column(ForeignKey("questions.id"))
+    question: Mapped[Optional["Question"]] = relationship(back_populates="answer_options", foreign_keys=question_id)
