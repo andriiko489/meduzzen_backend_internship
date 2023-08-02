@@ -15,5 +15,5 @@ async def get_all(current_user: user_schemas.User = Depends(Auth.get_current_use
 
 
 @router.post("/add/")
-async def add(question: quiz_schemas.Question):
+async def add(question: quiz_schemas.BasicQuestion):
     return await question_crud.add(question)

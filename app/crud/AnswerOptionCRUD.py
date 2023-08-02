@@ -7,10 +7,10 @@ default_session = session
 
 
 class AnswerOptionCRUD(BaseCRUD):
-    def __init__(self, session=default_session, model=models.AnswerOption, schema=quiz_schemas.AnswerOption):
+    def __init__(self, session=default_session, model=models.AnswerOption, schema=quiz_schemas.BasicAnswerOption):
         super().__init__(session, model, schema)
 
-    async def add(self, answer_option: quiz_schemas.AnswerOption):
+    async def add(self, answer_option: quiz_schemas.BasicAnswerOption):
         return await super().add(answer_option)
 
 
