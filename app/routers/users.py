@@ -6,6 +6,7 @@ from typing import Annotated
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 
+from models import models
 from schemas import user_schemas, token_schemas
 from crud.UserCRUD import user_crud
 from services.auth import Auth
@@ -33,10 +34,10 @@ async def get_user(user_id: int, current_user: user_schemas.User = Depends(Auth.
 
 @router.post("/add", response_model=user_schemas.UserResponse)
 async def add_user(user: user_schemas.AddUser):
-    user = await user_crud.add(user=user)
-    if not user:
+    db_user: models.User = await user_crud.add(user=user)
+    if not db_user:
         raise HTTPException(detail="User with this email or username already exist", status_code=418)
-    return user_schemas.UserResponse(msg="Success", user=user)
+    return user_schemas.UserResponse(msg="Success", user=db_user)
 
 
 @router.patch("/update", response_model=user_schemas.UserResponse)
@@ -55,11 +56,21 @@ async def delete_user(user_id: int, current_user: user_schemas.User = Depends(Au
     return user_schemas.UserResponse(msg="Success", user=user)
 
 
+@router.get("/owner_of")
+async def get_owner_of(current_user: user_schemas.User = Depends(Auth.get_current_user)):
+    return await user_crud.get_by_owner_of(current_user.id)
+
+
+@router.post("/leave_company")
+async def leave_company(current_user: user_schemas.User = Depends(Auth.get_current_user)):
+    return await user_crud.set_company(None, current_user.id)
+
+
 @router.post("/token", response_model=token_schemas.Token)
 async def login_for_access_token(
         form_data: Annotated[OAuth2PasswordRequestForm, Depends()]
 ):
-    user = await Auth.authenticate_user(form_data.username, form_data.password)
+    user: models.User = await Auth.authenticate_user(form_data.username, form_data.password)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

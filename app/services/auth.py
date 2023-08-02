@@ -2,12 +2,14 @@ from __future__ import annotations
 
 from datetime import timedelta, datetime
 
-from fastapi import Depends
+from fastapi import Depends, HTTPException
 from fastapi.security import HTTPBearer
-from jose.jwt import encode, decode
+
+from jose.jwt import decode
 from jwt import exceptions
 
-from jose import jwt
+from jose import jwt, ExpiredSignatureError
+from jwt.api_jwt import encode
 from jwt.jwks_client import PyJWKClient
 
 from schemas import user_schemas
@@ -26,7 +28,7 @@ class Auth:
         else:
             expire = datetime.utcnow() + timedelta(minutes=15)
         to_encode.update({"exp": expire})
-        encoded_jwt = encode(to_encode, settings.secret_key,
+        encoded_jwt = encode(payload=to_encode, key=settings.secret_key,
                              algorithm=settings.algorithm)
         return encoded_jwt
 
@@ -40,7 +42,10 @@ class Auth:
 
     @staticmethod
     def decode_access_token(token):
-        decoded = jwt.decode(token.credentials, settings.secret_key, algorithms=settings.algorithm)
+        try:
+            decoded = jwt.decode(token.credentials, settings.secret_key, algorithms=settings.algorithm)
+        except ExpiredSignatureError:
+            raise HTTPException(detail="Signature has expired, you should recreate access token", status_code=404)
         return decoded
 
     async def get_current_user(token: str = Depends(token_auth_scheme)):

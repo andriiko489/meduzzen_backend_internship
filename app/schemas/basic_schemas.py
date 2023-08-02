@@ -1,15 +1,18 @@
-from typing import Optional
+from typing import Optional, List
 
 from pydantic import BaseModel, ConfigDict
 
+from models import models
+
 
 class User(BaseModel):
-    model_config = ConfigDict(from_attributes=True, arbitrary_types_allowed=True)
+    model_config = ConfigDict(from_attributes=True)
     id: Optional[int] = None
     username: str
     hashed_password: str
     email: str
     is_active: bool
+    company_id: int
 
 
 class Company(BaseModel):
@@ -17,4 +20,15 @@ class Company(BaseModel):
     id: Optional[int] = None
     name: str
     description: Optional[str] = None
-    owner: Optional[User] = None
+    owner: "User"
+
+
+
+
+
+class Invitation(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: Optional[int] = None
+    sender_id: Optional[int] = None
+    receiver_id: int
+    company_id: int

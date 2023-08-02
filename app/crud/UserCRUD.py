@@ -3,11 +3,11 @@ from typing import Optional
 from sqlalchemy import select
 
 from crud.BaseCRUD import BaseCRUD
+from crud.CompanyCRUD import company_crud
 from db import pgdb
 from models import models
 from schemas import user_schemas
 from services.hasher import Hasher
-
 
 default_session = pgdb.session
 
@@ -32,6 +32,11 @@ class UserCRUD(BaseCRUD):
     async def get_users(self) -> list[models.User]:
         return await super().get_all()
 
+    async def get_by_owner_of(self, owner_id: int):
+        stmt = select(models.Company).where(models.Company.owner_id == owner_id)
+        item = (await self.session.execute(stmt)).scalars().all()
+        return item
+
     async def add(self, user: user_schemas.User) -> Optional[models.User]:
         self.schema = user_schemas.AddUser
         user.hashed_password = Hasher.get_password_hash(user.hashed_password)
@@ -43,6 +48,15 @@ class UserCRUD(BaseCRUD):
             user.hashed_password = Hasher.get_password_hash(user.hashed_password)
         await super().update(user)
         return await self.get(user.id)  # it needeed because UserUpdate have email = None
+
+    async def set_company(self, company_id, user_id):
+        stmt = select(models.User).where(models.User.id == user_id)
+        db_user = (await self.session.execute(stmt)).scalars().first()
+        db_user.company_id = company_id
+        self.session.add(db_user)
+        await self.session.commit()
+        await self.session.refresh(db_user)
+        return db_user
 
     async def delete(self, user_id: int) -> Optional[models.User]:
         return await super().delete(user_id)

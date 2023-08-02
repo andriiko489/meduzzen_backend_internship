@@ -16,7 +16,16 @@ class User(Base):
     email = Column(String, unique=True, index=True)
     hashed_password = Column(String)
     is_active = Column(Boolean, default=True)
-    company: Mapped[List["Company"]] = relationship(back_populates="owner")
+
+    owner_of: Mapped[Optional[List["Company"]]] = relationship(back_populates="owner", foreign_keys="Company.owner_id")
+
+    company_id: Mapped[Optional[int]] = mapped_column(ForeignKey("companies.id"))
+    company: Mapped[Optional["Company"]] = relationship(back_populates="members", foreign_keys=company_id)
+
+    sent_invitations: Mapped[Optional[List["Invitation"]]] = relationship(back_populates="sender",
+                                                                          foreign_keys="Invitation.sender_id")
+    received_invitations: Mapped[Optional[List["Invitation"]]] = relationship(back_populates="receiver",
+                                                                              foreign_keys="Invitation.receiver_id")
 
 
 class Company(Base):
@@ -25,5 +34,24 @@ class Company(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True)
     description = Column(String)
+
     owner_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
-    owner: Mapped["User"] = relationship(back_populates="company", lazy="subquery")
+    owner: Mapped["User"] = relationship(back_populates="owner_of", foreign_keys=owner_id)
+
+    members: Mapped[List["User"]] = relationship(back_populates="company", foreign_keys="User.company_id")
+
+    invitations: Mapped[List["Invitation"]] = relationship(back_populates="company", foreign_keys="Invitation.company_id")
+
+
+class Invitation(Base):
+    __tablename__ = "invitations"
+    id = Column(Integer, primary_key=True, index=True)
+
+    sender_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    sender: Mapped["User"] = relationship(back_populates="sent_invitations", foreign_keys=sender_id)
+
+    receiver_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    receiver: Mapped["User"] = relationship(back_populates="received_invitations", foreign_keys=receiver_id)
+
+    company_id: Mapped[int] = mapped_column(ForeignKey("companies.id"))
+    company: Mapped["Company"] = relationship(back_populates="invitations", foreign_keys=company_id)
