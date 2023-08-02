@@ -18,6 +18,8 @@ async def invitation_status(invitation, session=default_session):
         return InvitationStatus.CANNOT_SEND_TO_YOURSELF
     sender_role = await user_crud.get_role(invitation.sender_id, invitation.company_id)
     receiver_role = await user_crud.get_role(invitation.receiver_id, invitation.company_id)
+    if receiver_role is None or sender_role is None:
+        return InvitationStatus.NOT_FOUND
     if sender_role == -1:
         return InvitationStatus.SENDER_ANOTHER_COMPANY
     if receiver_role == -1:
@@ -43,6 +45,7 @@ class InvitationStatus(Enum):
     TO_OWNER = "From user to owner"
     SENDER_ANOTHER_COMPANY = "Sender have another company"
     RECEIVER_ANOTHER_COMPANY = "Receiver have another company"
+    NOT_FOUND = "Company or users not found"
 
 
 class ResponseStatus:

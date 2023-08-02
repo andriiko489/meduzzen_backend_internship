@@ -74,6 +74,10 @@ class UserCRUD(BaseCRUD):
         user_crud = UserCRUD(self.session)
         company = await company_crud.get_company(company_id)
         user = await user_crud.get_user(user_id)
+        if not company:
+            return None
+        if not user:
+            return None
         if user.company_id is None:
             return Role.UNEMPLOYED  # user
         if company.id != user.company_id:

@@ -76,6 +76,8 @@ async def kick_user(company_id: int, user_id: int, current_user: user_schemas.Us
 
     current_user_role = await user_crud.get_role(user_id=current_user.id, company_id=company_id)
     kicked_user_role = await user_crud.get_role(user_id=user_id, company_id=company_id)
+    if kicked_user_role.value is None:
+        HTTPException(detail=ExceptionResponses.NOT_FOUND.value, status_code=404)
     if kicked_user_role.value < 1:
         raise HTTPException(detail=ExceptionResponses.NOT_MEMBER.value, status_code=403)
     if current_user_role.value < 2:
