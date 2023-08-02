@@ -21,7 +21,7 @@ router = APIRouter(
 @router.get("/all/")
 async def get_users(current_user: user_schemas.User = Depends(Auth.get_current_user)):
     logger.info("Someone want list of all users")
-    return await user_crud.get_users()
+    return await user_crud.get_all()
 
 
 @router.get("/get", response_model=user_schemas.UserResponse)
