@@ -28,3 +28,11 @@ async def get_all(current_user: user_schemas.User = Depends(Auth.get_current_use
 async def add(quiz: quiz_schemas.BasicQuiz, current_user: user_schemas.User = Depends(Auth.get_current_user)):
     role = await get_role(company_id=quiz.company_id, user_id=current_user.id)
     return await quiz_crud.add(quiz)
+
+@router.patch("/delete")
+async def delete(quiz_id: int, current_user: user_schemas.User = Depends(Auth.get_current_user)):
+    quiz = await quiz_crud.get(quiz_id=quiz_id)
+    if not quiz:
+        HTTPException(detail="Quiz not found", status_code=404)
+    role = await get_role(company_id=quiz.company_id, user_id=current_user.id)
+    return await quiz_crud.delete(id=quiz.id)

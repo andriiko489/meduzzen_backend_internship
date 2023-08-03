@@ -30,3 +30,12 @@ async def add(answer_option: quiz_schemas.BasicAnswerOption,
               current_user: user_schemas.User = Depends(Auth.get_current_user)):
     role = await get_role(question_id= answer_option.question_id, user_id=current_user.id)
     return await answer_option_crud.add(answer_option)
+
+
+@router.patch("/delete")
+async def delete(answer_option_id: int, current_user: user_schemas.User = Depends(Auth.get_current_user)):
+    answer_option = await answer_option_crud.get(answer_option_id)
+    if not answer_option:
+        HTTPException(detail="Answer option not found", status_code=404)
+    role = await get_role(question_id=answer_option.question_id, user_id=current_user.id)
+    return await answer_option_crud.delete(id=answer_option.id)
