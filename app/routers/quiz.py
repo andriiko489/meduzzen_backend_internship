@@ -29,6 +29,7 @@ async def add(quiz: quiz_schemas.BasicQuiz, current_user: user_schemas.User = De
     role = await get_role(company_id=quiz.company_id, user_id=current_user.id)
     return await quiz_crud.add(quiz)
 
+
 @router.patch("/delete")
 async def delete(quiz_id: int, current_user: user_schemas.User = Depends(Auth.get_current_user)):
     quiz = await quiz_crud.get(quiz_id=quiz_id)
@@ -36,3 +37,15 @@ async def delete(quiz_id: int, current_user: user_schemas.User = Depends(Auth.ge
         HTTPException(detail="Quiz not found", status_code=404)
     role = await get_role(company_id=quiz.company_id, user_id=current_user.id)
     return await quiz_crud.delete(id=quiz.id)
+
+
+@router.patch("/update")
+async def update(quiz: quiz_schemas.UpdateQuiz, current_user: user_schemas.User = Depends(Auth.get_current_user)):
+    db_quiz = await quiz_crud.get(quiz_id=quiz.id)
+    if not db_quiz:
+        HTTPException(detail="Quiz not found", status_code=404)
+    role = await get_role(company_id=db_quiz.company_id, user_id=current_user.id)
+
+    quiz = quiz_schemas.Quiz(**quiz.model_dump())
+    quiz.company_id = db_quiz.company_id
+    return await quiz_crud.update(quiz)

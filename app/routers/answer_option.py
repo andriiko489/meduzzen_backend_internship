@@ -39,3 +39,15 @@ async def delete(answer_option_id: int, current_user: user_schemas.User = Depend
         HTTPException(detail="Answer option not found", status_code=404)
     role = await get_role(question_id=answer_option.question_id, user_id=current_user.id)
     return await answer_option_crud.delete(id=answer_option.id)
+
+
+@router.patch("/update")
+async def update(answer_option: quiz_schemas.UpdateAnswerOption, current_user: user_schemas.User = Depends(Auth.get_current_user)):
+    db_answer_option = await answer_option_crud.get(answer_option.id)
+    if not db_answer_option:
+        HTTPException(detail="Answer option not found", status_code=404)
+    role = await get_role(question_id=db_answer_option.question_id, user_id=current_user.id)
+
+    answer_option = quiz_schemas.AnswerOption(**answer_option.model_dump())
+    answer_option.question_id = db_answer_option.question_id
+    return await answer_option_crud.update(answer_option)
