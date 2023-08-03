@@ -37,6 +37,7 @@ class Question(BaseModel):
     id: Optional[int] = None
 
     text: str
+    correct_answer: int
 
     quiz_id: Optional[int] = None
 
@@ -45,6 +46,7 @@ class BasicQuestion(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     text: str
+    correct_answer: int
 
     quiz_id: Optional[int] = None
 
@@ -54,6 +56,7 @@ class UpdateQuestion(BaseModel):
     id: Optional[int] = None
 
     text: str
+    correct_answer: int
 
 
 class AnswerOption(BaseModel):

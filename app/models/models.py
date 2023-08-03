@@ -118,6 +118,7 @@ class Question(Base):
     answer_options: Mapped[List["AnswerOption"]] = relationship(back_populates="question",
                                                                 foreign_keys="AnswerOption.question_id",
                                                                 lazy="selectin")
+    #correct_answer_id: int
 
 
 class AnswerOption(Base):
