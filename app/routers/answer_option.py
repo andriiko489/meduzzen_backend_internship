@@ -1,11 +1,10 @@
-
-
 from fastapi import APIRouter, Depends, HTTPException
 
 from crud.AnswerOptionCRUD import answer_option_crud
 from crud.QuestionCRUD import question_crud
 from crud.QuizCRUD import quiz_crud
 from crud.UserCRUD import user_crud
+from routers import question
 from schemas import user_schemas, quiz_schemas
 from services.auth import Auth
 
@@ -14,22 +13,20 @@ router = APIRouter(
     tags=["answer_option"])
 
 
+async def get_role(question_id: int, user_id: int):
+    db_question = await question_crud.get(question_id)
+    if db_question is None:
+        raise HTTPException(detail="Question not found", status_code=404)
+    await question.get_role(quiz_id=db_question.quiz_id, user_id=user_id)
+
+
 @router.get("/all/")
 async def get_all(current_user: user_schemas.User = Depends(Auth.get_current_user)):
     return await answer_option_crud.get_all()
 
 
 @router.post("/add/")
-async def add(answer_option: quiz_schemas.BasicAnswerOption, current_user: user_schemas.User = Depends(Auth.get_current_user)):
-    question = await question_crud.get(answer_option.question_id)
-    if question is None:
-        raise HTTPException(detail="Question not found", status_code=404)
-    quiz = await quiz_crud.get(question.quiz_id)
-    if quiz is None:
-        raise HTTPException(detail="Quiz not found", status_code=404)
-    role = await user_crud.get_role(user_id=current_user.id, company_id=quiz.company_id)
-    if role is None:
-        raise HTTPException(detail="Company not found", status_code=404)
-    if role.value < 2:
-        raise HTTPException(detail="Only admin and owner can do it", status_code=404)
+async def add(answer_option: quiz_schemas.BasicAnswerOption,
+              current_user: user_schemas.User = Depends(Auth.get_current_user)):
+    role = await get_role(question_id= answer_option.question_id, user_id=current_user.id)
     return await answer_option_crud.add(answer_option)
