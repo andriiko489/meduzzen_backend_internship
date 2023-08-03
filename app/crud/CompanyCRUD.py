@@ -25,9 +25,15 @@ class CompanyCRUD(BaseCRUD):
         items = (await self.session.execute(stmt)).scalars().all()
         return items
 
+    async def get_quizzes(self, company_id: int):
+        stmt = select(models.Quiz).where(models.Quiz.company_id == company_id)
+        items = (await self.session.execute(stmt)).scalars().all()
+        return items
+
     async def get_admins(self, company_id: int):
         stmt = select(models.Admin).where(models.Admin.company_id == company_id)
         items = (await self.session.execute(stmt)).scalars().all()
+        print(items)
         return items
 
     async def add(self, company: basic_schemas.Company) -> Optional[models.Company]:

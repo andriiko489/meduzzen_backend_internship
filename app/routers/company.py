@@ -42,6 +42,12 @@ async def get_members(company_id: int, current_user: user_schemas.User = Depends
     return members
 
 
+@router.get("/quizzes")
+async def get_quizzes(company_id: int, current_user: user_schemas.User = Depends(Auth.get_current_user)):
+    quizzes = await company_crud.get_quizzes(company_id)
+    return quizzes
+
+
 @router.post("/add")
 async def add_company(company: company_schemas.AddCompany,
                       current_user: user_schemas.User = Depends(Auth.get_current_user)):
