@@ -22,7 +22,8 @@ class User(Base):
                                                                lazy="selectin")
 
     company_id: Mapped[Optional[int]] = mapped_column(ForeignKey("companies.id"))
-    company: Mapped[Optional["Company"]] = relationship(back_populates="members", foreign_keys=company_id)
+    company: Mapped[Optional["Company"]] = relationship(back_populates="members",
+                                                        foreign_keys=company_id)
 
     sent_invitations: Mapped[Optional[List["Invitation"]]] = relationship(back_populates="sender",
                                                                           foreign_keys="Invitation.sender_id",
@@ -30,8 +31,8 @@ class User(Base):
     received_invitations: Mapped[Optional[List["Invitation"]]] = relationship(back_populates="receiver",
                                                                               foreign_keys="Invitation.receiver_id",
                                                                               lazy="selectin")
-    admin_model: Mapped[Optional["Admin"]] = relationship(back_populates="user", foreign_keys="Admin.user_id",
-                                                          lazy="selectin")
+    admin_model: Mapped[Optional["Admin"]] = relationship(back_populates="user",
+                                                          foreign_keys="Admin.user_id")
 
 
 class Company(Base):
@@ -43,8 +44,7 @@ class Company(Base):
 
     owner_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     owner: Mapped["User"] = relationship(back_populates="owner_of",
-                                         foreign_keys=owner_id,
-                                         lazy="selectin")
+                                         foreign_keys=owner_id)
 
     members: Mapped[List["User"]] = relationship(back_populates="company",
                                                  foreign_keys="User.company_id",
@@ -97,7 +97,8 @@ class Quiz(Base):
     frequency = Column(Integer)
 
     company_id: Mapped[Optional[int]] = mapped_column(ForeignKey("companies.id"))
-    company: Mapped[Optional["Company"]] = relationship(back_populates="quizzes", foreign_keys=company_id)
+    company: Mapped[Optional["Company"]] = relationship(back_populates="quizzes",
+                                                        foreign_keys=company_id)
 
     questions: Mapped[List["Question"]] = relationship(back_populates="quiz",
                                                        foreign_keys="Question.quiz_id",
@@ -111,10 +112,12 @@ class Question(Base):
     text = Column(String)
 
     quiz_id: Mapped[Optional[int]] = mapped_column(ForeignKey("quizzes.id"))
-    quiz: Mapped[Optional["Quiz"]] = relationship(back_populates="questions", foreign_keys=quiz_id)
+    quiz: Mapped[Optional["Quiz"]] = relationship(back_populates="questions",
+                                                  foreign_keys=quiz_id)
 
     answer_options: Mapped[List["AnswerOption"]] = relationship(back_populates="question",
-                                                                foreign_keys="AnswerOption.question_id")
+                                                                foreign_keys="AnswerOption.question_id",
+                                                                lazy="selectin")
 
 
 class AnswerOption(Base):
@@ -124,4 +127,5 @@ class AnswerOption(Base):
     text = Column(String)
 
     question_id: Mapped[Optional[int]] = mapped_column(ForeignKey("questions.id"))
-    question: Mapped[Optional["Question"]] = relationship(back_populates="answer_options", foreign_keys=question_id)
+    question: Mapped[Optional["Question"]] = relationship(back_populates="answer_options",
+                                                          foreign_keys=question_id)
