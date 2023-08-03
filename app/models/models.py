@@ -18,8 +18,7 @@ class User(Base):
     is_active = Column(Boolean, default=True)
 
     owner_of: Mapped[Optional[List["Company"]]] = relationship(back_populates="owner",
-                                                               foreign_keys="Company.owner_id",
-                                                               lazy="selectin")
+                                                               foreign_keys="Company.owner_id")
 
     company_id: Mapped[Optional[int]] = mapped_column(ForeignKey("companies.id"))
     company: Mapped[Optional["Company"]] = relationship(back_populates="members",
@@ -44,7 +43,8 @@ class Company(Base):
 
     owner_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     owner: Mapped["User"] = relationship(back_populates="owner_of",
-                                         foreign_keys=owner_id)
+                                         foreign_keys=owner_id,
+                                         lazy="selectin")
 
     members: Mapped[List["User"]] = relationship(back_populates="company",
                                                  foreign_keys="User.company_id",
