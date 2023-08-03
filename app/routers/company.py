@@ -46,11 +46,12 @@ async def get_members(company_id: int, current_user: user_schemas.User = Depends
 async def add_company(company: company_schemas.AddCompany,
                       current_user: user_schemas.User = Depends(Auth.get_current_user)):
     company = basic_schemas.Company(**company.model_dump())
+    current_user_id = current_user.id
     company.owner_id = current_user.id
     company = await company_crud.add(company=company)
     if not company:
         raise HTTPException(status_code=418)
-    await user_crud.set_company(company_id=company.id, user_id=current_user.id)
+    await user_crud.set_company(company_id=company.id, user_id=current_user_id)
     return company
 
 
