@@ -25,7 +25,7 @@ class ExceptionResponses(Enum):
 @router.get("/all/")
 async def get_company(current_user: user_schemas.User = Depends(Auth.get_current_user)):
     logger.info("Someone want list of all companies")
-    return await company_crud.get_companies()
+    return await company_crud.get_all()
 
 
 @router.get("/get")
