@@ -11,8 +11,8 @@ default_session = pgdb.session
 
 
 class AdminCRUD(BaseCRUD):
-    def __init__(self, session=default_session, model=models.Admin, schema=basic_schemas.Admin):
-        super().__init__(session, model, schema)
+    def __init__(self, session=default_session, model=models.Admin):
+        super().__init__(session, model)
 
     async def get(self, admin_id: int):
         return await super().get(admin_id)
@@ -20,7 +20,7 @@ class AdminCRUD(BaseCRUD):
     async def get_all(self):
         return await super().get_all()
 
-    async def set_admin(self, admin: basic_schemas.BasicAdmin):
+    async def set_admin(self, admin):
         admin = basic_schemas.Admin(**admin.model_dump())
         return await super().add(admin)
 

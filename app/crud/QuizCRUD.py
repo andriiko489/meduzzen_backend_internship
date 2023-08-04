@@ -7,8 +7,8 @@ default_session = session
 
 
 class QuizCRUD(BaseCRUD):
-    def __init__(self, session=default_session, model=models.Quiz, schema=quiz_schemas.Quiz):
-        super().__init__(session, model, schema)
+    def __init__(self, session=default_session, model=models.Quiz):
+        super().__init__(session, model)
 
     async def get(self, quiz_id: int):
         return await super().get(quiz_id)

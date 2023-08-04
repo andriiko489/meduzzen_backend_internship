@@ -7,10 +7,10 @@ default_session = session
 
 
 class QuestionCRUD(BaseCRUD):
-    def __init__(self, session=default_session, model=models.Question, schema=quiz_schemas.Question):
-        super().__init__(session, model, schema)
+    def __init__(self, session=default_session, model=models.Question):
+        super().__init__(session, model)
 
-    async def add(self, question: quiz_schemas.Question):
+    async def add(self, question):
         return await super().add(question)
 
 

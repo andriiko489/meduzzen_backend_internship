@@ -12,9 +12,8 @@ def return_if_not_empty(pd_field, db_field):
 
 
 class BaseCRUD(Generic[T]):
-    def __init__(self, session, model, schema):
+    def __init__(self, session, model):
         self.model = model
-        self.schema = schema
         self.session = session
 
     async def get(self, item_id: int):
