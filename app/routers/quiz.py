@@ -1,3 +1,5 @@
+from enum import Enum
+
 from fastapi import APIRouter, Depends, HTTPException
 
 from crud.QuizCRUD import quiz_crud
@@ -10,12 +12,22 @@ router = APIRouter(
     tags=["quiz"])
 
 
+class ExceptionResponses(Enum):
+    COMPANY_NOT_FOUND = "Company not found"
+    QUIZ_NOT_FOUND = "Quiz not found"
+    QUESTION_NOT_FOUND = "Question not found"
+    ANSWER_OPTION_NOT_FOUND = "Answer option not found"
+    ONLY_ADMIN_OWNER = "Only admin and owner can do it"
+    QUIZ_MUST_HAVE_TWO_QUESTIONS = "Quiz must be have at least two questions"
+
+
+
 async def get_role(user_id: int, company_id: int):
     role = await user_crud.get_role(user_id=user_id, company_id=company_id)
     if role is None:
-        raise HTTPException(detail="Company not found", status_code=404)
+        raise HTTPException(detail=ExceptionResponses.COMPANY_NOT_FOUND.value, status_code=404)
     if role.value < 2:
-        raise HTTPException(detail="Only admin and owner can do it", status_code=404)
+        raise HTTPException(detail=ExceptionResponses.ONLY_ADMIN_OWNER.value, status_code=404)
     return role
 
 
@@ -34,7 +46,7 @@ async def add(quiz: quiz_schemas.BasicQuiz, current_user: user_schemas.User = De
 async def delete(quiz_id: int, current_user: user_schemas.User = Depends(Auth.get_current_user)):
     quiz = await quiz_crud.get(quiz_id=quiz_id)
     if not quiz:
-        HTTPException(detail="Quiz not found", status_code=404)
+        HTTPException(detail=ExceptionResponses.QUIZ_NOT_FOUND.value, status_code=404)
     role = await get_role(company_id=quiz.company_id, user_id=current_user.id)
     return await quiz_crud.delete(id=quiz.id)
 
@@ -43,7 +55,7 @@ async def delete(quiz_id: int, current_user: user_schemas.User = Depends(Auth.ge
 async def update(quiz: quiz_schemas.UpdateQuiz, current_user: user_schemas.User = Depends(Auth.get_current_user)):
     db_quiz = await quiz_crud.get(quiz_id=quiz.id)
     if not db_quiz:
-        HTTPException(detail="Quiz not found", status_code=404)
+        HTTPException(detail=ExceptionResponses.QUIZ_NOT_FOUND.value, status_code=404)
     role = await get_role(company_id=db_quiz.company_id, user_id=current_user.id)
 
     quiz = quiz_schemas.Quiz(**quiz.model_dump())
