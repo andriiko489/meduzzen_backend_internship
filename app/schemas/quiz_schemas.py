@@ -16,13 +16,6 @@ class Quiz(BaseModel):
 
     company_id: Optional[int] = None
 
-    @model_validator(mode='after')
-    async def check_questions(self):
-        questions = await question_crud.get_by_quiz_id(self.id)
-        if len(questions) < 2:
-            return ValueError("Quiz must be have at least two questions")
-        return self
-
 
 class BasicQuiz(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -47,23 +40,16 @@ class Question(BaseModel):
     id: Optional[int] = None
 
     text: str
-    correct_answer: int
+    correct_answer_id: int
 
     quiz_id: Optional[int] = None
-
-    @model_validator(mode='after')
-    async def check_answer_options(self):
-        answer_options = await answer_option_crud.get_by_question_id(self.id)
-        if len(answer_options) < 2:
-            return ValueError("Question must be have at least two answer option")
-        return self
 
 
 class BasicQuestion(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     text: str
-    correct_answer: int
+    correct_answer_id: int
 
     quiz_id: Optional[int] = None
 
@@ -73,7 +59,7 @@ class UpdateQuestion(BaseModel):
     id: Optional[int] = None
 
     text: str
-    correct_answer: int
+    correct_answer_id: int
 
 
 class AnswerOption(BaseModel):

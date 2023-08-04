@@ -28,7 +28,13 @@ async def get_all(current_user: user_schemas.User = Depends(Auth.get_current_use
 @router.post("/add/")
 async def add(answer_option: quiz_schemas.BasicAnswerOption,
               current_user: user_schemas.User = Depends(Auth.get_current_user)):
-    role = await get_role(question_id= answer_option.question_id, user_id=current_user.id)
+    role = await get_role(question_id=answer_option.question_id, user_id=current_user.id)
+    db_question = await question_crud.get(answer_option.question_id)
+    db_quiz = await quiz_crud.get(db_question.quiz_id)
+    questions = await question_crud.get_by_quiz_id(db_quiz.id)
+    print(len(questions), "AAAAAA")
+    if len(questions) < 2:
+        raise HTTPException(detail="Quiz must be have at least two questions", status_code=418)
     return await answer_option_crud.add(answer_option)
 
 
@@ -42,7 +48,8 @@ async def delete(answer_option_id: int, current_user: user_schemas.User = Depend
 
 
 @router.patch("/update")
-async def update(answer_option: quiz_schemas.UpdateAnswerOption, current_user: user_schemas.User = Depends(Auth.get_current_user)):
+async def update(answer_option: quiz_schemas.UpdateAnswerOption,
+                 current_user: user_schemas.User = Depends(Auth.get_current_user)):
     db_answer_option = await answer_option_crud.get(answer_option.id)
     if not db_answer_option:
         HTTPException(detail="Answer option not found", status_code=404)
