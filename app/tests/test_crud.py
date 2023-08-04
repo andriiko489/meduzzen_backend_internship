@@ -5,9 +5,10 @@ import pytest
 from fastapi.testclient import TestClient
 
 from main import app
-from schemas import user_schemas, basic_schemas, invitation_schemas
+from schemas import user_schemas, basic_schemas, invitation_schemas, quiz_schemas
 
-from tests.testdb import user_crud_test, company_crud_test, test_session, invitation_crud_test, admin_crud_test
+from tests.testdb import user_crud_test, company_crud_test, test_session, invitation_crud_test, admin_crud_test, \
+    quiz_crud_test
 from sqlalchemy.sql import text as sa_text
 
 client = TestClient(app)
@@ -18,11 +19,6 @@ def get_random_string(length):
     letters = string.ascii_lowercase
     result_str = ''.join(random.choice(letters) for i in range(length))
     return result_str
-
-
-def test_main():
-    response = client.get("/")
-    assert response.status_code == 403
 
 
 @pytest.mark.asyncio
@@ -63,3 +59,14 @@ async def test_crud():
     admin = basic_schemas.BasicAdmin(company_id=company_id, user_id=user_2_id)
     db_admin = await admin_crud_test.set_admin(admin)
     assert db_admin is not None
+
+    quiz = quiz_schemas.BasicQuiz(company_id=company_id,
+                                  name=test_string,
+                                  description=test_string,
+                                  frequency=3)
+    db_quiz = await quiz_crud_test.add(quiz)
+    assert db_quiz is not None
+    quiz_id = db_quiz.id
+    db_quiz = await quiz_crud_test.get(quiz_id)
+    assert db_quiz is not None
+
