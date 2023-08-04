@@ -1,7 +1,8 @@
+from sqlalchemy import select
+
 from crud.BaseCRUD import BaseCRUD
 from db.pgdb import session
 from models import models
-from schemas import quiz_schemas
 
 default_session = session
 
@@ -13,5 +14,9 @@ class QuestionCRUD(BaseCRUD):
     async def add(self, question):
         return await super().add(question)
 
+    async def get_by_quiz_id(self, quiz_id: int):
+        stmt = select(models.Question).where(models.Question.quiz_id == quiz_id)
+        items = (await self.session.execute(stmt)).scalars().all()
+        return items
 
 question_crud = QuestionCRUD()

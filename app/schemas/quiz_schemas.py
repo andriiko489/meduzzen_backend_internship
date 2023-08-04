@@ -1,6 +1,9 @@
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, model_validator
+
+from crud.AnswerOptionCRUD import answer_option_crud
+from crud.QuestionCRUD import question_crud
 
 
 class Quiz(BaseModel):
@@ -12,6 +15,13 @@ class Quiz(BaseModel):
     frequency: int
 
     company_id: Optional[int] = None
+
+    @model_validator(mode='after')
+    async def check_questions(self):
+        questions = await question_crud.get_by_quiz_id(self.id)
+        if len(questions) < 2:
+            return ValueError("Quiz must be have at least two questions")
+        return self
 
 
 class BasicQuiz(BaseModel):
@@ -40,6 +50,13 @@ class Question(BaseModel):
     correct_answer: int
 
     quiz_id: Optional[int] = None
+
+    @model_validator(mode='after')
+    async def check_answer_options(self):
+        answer_options = await answer_option_crud.get_by_question_id(self.id)
+        if len(answer_options) < 2:
+            return ValueError("Question must be have at least two answer option")
+        return self
 
 
 class BasicQuestion(BaseModel):
