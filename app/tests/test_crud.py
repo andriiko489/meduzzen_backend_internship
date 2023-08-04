@@ -8,7 +8,7 @@ from main import app
 from schemas import user_schemas, basic_schemas, invitation_schemas, quiz_schemas
 
 from tests.testdb import user_crud_test, company_crud_test, test_session, invitation_crud_test, admin_crud_test, \
-    quiz_crud_test
+    quiz_crud_test, question_crud_test
 from sqlalchemy.sql import text as sa_text
 
 client = TestClient(app)
@@ -70,3 +70,20 @@ async def test_crud():
     db_quiz = await quiz_crud_test.get(quiz_id)
     assert db_quiz is not None
 
+    question = quiz_schemas.BasicQuestion(quiz_id=quiz_id,
+                                          text=test_string,
+                                          correct_answer_id=1)
+    db_question = await question_crud_test.add(question)
+    assert db_question is not None
+    question_id = db_question.id
+    db_question = await question_crud_test.get(question_id)
+    assert db_question is not None
+
+    question_2 = quiz_schemas.BasicQuestion(quiz_id=quiz_id,
+                                            text=test_string_2,
+                                            correct_answer_id=1)
+    db_question_2 = await question_crud_test.add(question_2)
+    assert db_question_2 is not None
+    question_2_id = db_question_2.id
+    db_question_2 = await question_crud_test.get(question_2_id)
+    assert db_question_2 is not None

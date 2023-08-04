@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from crud.AdminCRUD import AdminCRUD
 from crud.CompanyCRUD import CompanyCRUD
 from crud.InvitationCRUD import InvitationCRUD
+from crud.QuestionCRUD import QuestionCRUD
 from crud.QuizCRUD import QuizCRUD
 from crud.UserCRUD import UserCRUD
 from utils.config import settings
@@ -16,3 +17,4 @@ company_crud_test = CompanyCRUD(test_session)
 invitation_crud_test = InvitationCRUD(test_session)
 admin_crud_test = AdminCRUD(test_session)
 quiz_crud_test = QuizCRUD(test_session)
+question_crud_test = QuestionCRUD(test_session)
