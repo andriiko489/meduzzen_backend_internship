@@ -22,8 +22,8 @@ class Role(IntEnum):
 
 
 class UserCRUD(BaseCRUD):
-    def __init__(self, session=default_session, model=models.User, schema=user_schemas.User):
-        super().__init__(session, model, schema)
+    def __init__(self, session=default_session, model=models.User):
+        super().__init__(session, model)
 
     async def get_user(self, user_id: int) -> Optional[models.User]:
         return await super().get(user_id)

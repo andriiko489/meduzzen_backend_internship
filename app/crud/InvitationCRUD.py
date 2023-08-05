@@ -8,7 +8,6 @@ from crud.BaseCRUD import BaseCRUD
 from crud.UserCRUD import UserCRUD
 from db import pgdb
 from models import models
-from schemas import basic_schemas, invitation_schemas
 
 default_session = pgdb.session
 
@@ -55,8 +54,8 @@ class ResponseStatus:
 
 
 class InvitationCRUD(BaseCRUD):
-    def __init__(self, session=default_session, model=models.Invitation, schema=basic_schemas.Invitation):
-        super().__init__(session, model, schema)
+    def __init__(self, session=default_session, model=models.Invitation):
+        super().__init__(session, model)
 
     async def get(self, invitation_id: int) -> Optional[models.Invitation]:
         return await super().get(invitation_id)
@@ -64,7 +63,7 @@ class InvitationCRUD(BaseCRUD):
     async def get_all(self) -> list[models.Invitation]:
         return await super().get_all()
 
-    async def add(self, invitation: invitation_schemas.BasicInvitation):
+    async def add(self, invitation):
         status = await invitation_status(invitation, self.session)
         if status in [InvitationStatus.TO_OWNER, InvitationStatus.TO_USER]:
             return await super().add(invitation)
@@ -73,7 +72,7 @@ class InvitationCRUD(BaseCRUD):
     async def delete(self, invitation_id: int):
         return await super().delete(invitation_id)
 
-    async def cancel(self, invitation_id: int, current_user: basic_schemas.User):
+    async def cancel(self, invitation_id: int, current_user):
         invitation = await self.get(invitation_id)
         if not invitation:
             raise HTTPException(detail="invitation not exist", status_code=418)
@@ -83,7 +82,7 @@ class InvitationCRUD(BaseCRUD):
             await self.delete(invitation_id)
             return ResponseStatus.success_canceled
 
-    async def decline(self, invitation_id: int, current_user: basic_schemas.User):
+    async def decline(self, invitation_id: int, current_user):
         invitation = await self.get(invitation_id)
         if not invitation:
             raise HTTPException(detail="invitation not exist", status_code=418)

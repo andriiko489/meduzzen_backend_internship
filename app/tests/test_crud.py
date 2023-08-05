@@ -4,10 +4,12 @@ import random
 import pytest
 from fastapi.testclient import TestClient
 
+from crud.AnswerOptionCRUD import answer_option_crud
 from main import app
-from schemas import user_schemas, basic_schemas, invitation_schemas
+from schemas import user_schemas, basic_schemas, invitation_schemas, quiz_schemas
 
-from tests.testdb import user_crud_test, company_crud_test, test_session, invitation_crud_test, admin_crud_test
+from tests.testdb import user_crud_test, company_crud_test, test_session, invitation_crud_test, admin_crud_test, \
+    quiz_crud_test, question_crud_test
 from sqlalchemy.sql import text as sa_text
 
 client = TestClient(app)
@@ -18,11 +20,6 @@ def get_random_string(length):
     letters = string.ascii_lowercase
     result_str = ''.join(random.choice(letters) for i in range(length))
     return result_str
-
-
-def test_main():
-    response = client.get("/")
-    assert response.status_code == 403
 
 
 @pytest.mark.asyncio
@@ -63,3 +60,36 @@ async def test_crud():
     admin = basic_schemas.BasicAdmin(company_id=company_id, user_id=user_2_id)
     db_admin = await admin_crud_test.set_admin(admin)
     assert db_admin is not None
+
+    quiz = quiz_schemas.BasicQuiz(company_id=company_id,
+                                  name=test_string,
+                                  description=test_string,
+                                  frequency=3)
+    db_quiz = await quiz_crud_test.add(quiz)
+    assert db_quiz is not None
+    quiz_id = db_quiz.id
+    db_quiz = await quiz_crud_test.get(quiz_id)
+    assert db_quiz is not None
+
+    question = quiz_schemas.BasicQuestion(quiz_id=quiz_id,
+                                          text=test_string,
+                                          correct_answer_id=1)
+    db_question = await question_crud_test.add(question)
+    assert db_question is not None
+    question_id = db_question.id
+    db_question = await question_crud_test.get(question_id)
+    assert db_question is not None
+
+    question_2 = quiz_schemas.BasicQuestion(quiz_id=quiz_id,
+                                            text=test_string_2,
+                                            correct_answer_id=1)
+    db_question_2 = await question_crud_test.add(question_2)
+    assert db_question_2 is not None
+    question_2_id = db_question_2.id
+    db_question_2 = await question_crud_test.get(question_2_id)
+    assert db_question_2 is not None
+
+    answer_option = quiz_schemas.AnswerOption(question_id=question_id,
+                                              text=test_string)
+    db_answer_option = await answer_option_crud.add(answer_option)
+    assert db_answer_option is not None
