@@ -4,12 +4,11 @@ import random
 import pytest
 from fastapi.testclient import TestClient
 
-from crud.AnswerOptionCRUD import answer_option_crud
 from main import app
 from schemas import user_schemas, basic_schemas, invitation_schemas, quiz_schemas
 
 from tests.testdb import user_crud_test, company_crud_test, test_session, invitation_crud_test, admin_crud_test, \
-    quiz_crud_test, question_crud_test
+    quiz_crud_test, question_crud_test, answer_option_crud_test
 from sqlalchemy.sql import text as sa_text
 
 client = TestClient(app)
@@ -91,5 +90,5 @@ async def test_crud():
 
     answer_option = quiz_schemas.AnswerOption(question_id=question_id,
                                               text=test_string)
-    db_answer_option = await answer_option_crud.add(answer_option)
+    db_answer_option = await answer_option_crud_test.add(answer_option)
     assert db_answer_option is not None
