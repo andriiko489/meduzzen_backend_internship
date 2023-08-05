@@ -32,7 +32,6 @@ class CompanyCRUD(BaseCRUD):
     async def get_admins(self, company_id: int):
         stmt = select(models.Admin).where(models.Admin.company_id == company_id)
         items = (await self.session.execute(stmt)).scalars().all()
-        print(items)
         return items
 
     async def add(self, company) -> Optional[models.Company]:
