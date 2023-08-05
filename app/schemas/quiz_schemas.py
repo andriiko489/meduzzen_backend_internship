@@ -1,9 +1,6 @@
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict, model_validator
-
-from crud.AnswerOptionCRUD import answer_option_crud
-from crud.QuestionCRUD import question_crud
+from pydantic import BaseModel, ConfigDict
 
 
 class Quiz(BaseModel):
