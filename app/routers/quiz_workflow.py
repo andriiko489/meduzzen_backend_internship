@@ -1,7 +1,10 @@
+from datetime import datetime
+
 from fastapi import APIRouter, Depends, HTTPException
 
 from crud.AnswerOptionCRUD import answer_option_crud
 from crud.AnsweredQuestionCRUD import answered_question_crud
+from crud.FinishedQuizCRUD import finished_quiz_crud
 from crud.ProgressQuizCRUD import progress_quiz_crud
 from crud.QuestionCRUD import question_crud
 from crud.QuizCRUD import quiz_crud
@@ -79,3 +82,31 @@ async def answer(question_id: int, chosen_answer_id: int,
     if not db_answered_question:
         raise HTTPException(detail="Cannot save answer, unexpected error", status_code=408)
     return db_answered_question
+
+
+@router.post("/finish_quiz/")
+async def finish_quiz(current_user: user_schemas.User = Depends(Auth.get_current_user)):
+    progress_quiz = await progress_quiz_crud.get_by_user_id(current_user.id)
+    if not progress_quiz:
+        raise HTTPException(detail="User dont start quiz yet", status_code=404)
+    all_questions = await question_crud.get_by_quiz_id(quiz_id=progress_quiz.quiz_id)
+    # user_answers = await answered_question_crud.get_by_progress_quiz_id(progress_quiz_id=progress_quiz.id)
+    num_of_correct_answers = 0
+    # for user_answer in user_answers:
+    #     print(111)
+    #     question = await question_crud.get(user_answer.question_id)
+    #     print(question.correct_answer_id, user_answer.id)
+    #     print(question, user_answer)
+    #     # if question.correct_answer_id == user_answer.id:
+    #     #     print(222)
+    #     #     num_of_correct_answers += 1
+    #     print(333)
+    print(444)
+    finished_quiz = quiz_workflow_schemas.BasicFinishedQuiz(num_of_questions=len(all_questions),
+                                                            num_of_correct_answers=num_of_correct_answers,
+                                                            user_id=current_user.id,
+                                                            time=datetime.utcnow() - progress_quiz.started_at)
+    print(555)
+    await progress_quiz_crud.delete(progress_quiz.id)
+    print(666)
+    return await finished_quiz_crud.add(finished_quiz)
