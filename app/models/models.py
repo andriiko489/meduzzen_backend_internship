@@ -32,13 +32,10 @@ class User(Base):
                                                                               lazy="selectin")
     admin_model: Mapped[Optional["Admin"]] = relationship(back_populates="user",
                                                           foreign_keys="Admin.user_id")
-    progress_quizzes: Mapped[Optional[List["ProgressQuiz"]]] = relationship(back_populates="user",
-                                                                            foreign_keys="ProgressQuiz.user_id",
-                                                                            lazy="selectin")
 
-    answered_questions: Mapped[List["AnsweredQuestion"]] = relationship(back_populates="user",
-                                                                        foreign_keys="AnsweredQuestion.user_id",
-                                                                        lazy="selectin")
+    progress_quizzes: Mapped[Optional["ProgressQuiz"]] = relationship(back_populates="user",
+                                                                      foreign_keys="ProgressQuiz.user_id",
+                                                                      lazy="selectin")
 
 
 class Company(Base):
@@ -154,27 +151,31 @@ class ProgressQuiz(Base):
     __tablename__ = "progress_quizzes"
     id = Column(Integer, primary_key=True, index=True)
 
-    quiz_id: Mapped[Optional[int]] = mapped_column(ForeignKey("quizzes.id"))
-    quiz: Mapped[Optional["Quiz"]] = relationship(back_populates="progress_quizzes",
-                                                  foreign_keys=quiz_id)
+    quiz_id: Mapped[int] = mapped_column(ForeignKey("quizzes.id"))
+    quiz: Mapped["Quiz"] = relationship(back_populates="progress_quizzes",
+                                        foreign_keys=quiz_id)
 
-    user_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"))
-    user: Mapped[Optional["User"]] = relationship(back_populates="progress_quizzes",
-                                                  foreign_keys=user_id)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    user: Mapped["User"] = relationship(back_populates="progress_quizzes",
+                                        foreign_keys=user_id)
+
+    answered_questions: Mapped[List["AnsweredQuestion"]] = relationship(back_populates="progress_quiz",
+                                                                        foreign_keys="AnsweredQuestion.progress_quiz_id",
+                                                                        lazy="selectin")
 
 
 class AnsweredQuestion(Base):
     __tablename__ = "answered_questions"
     id = Column(Integer, primary_key=True, index=True)
 
-    question_id: Mapped[Optional[int]] = mapped_column(ForeignKey("questions.id"))
-    question: Mapped[Optional["Question"]] = relationship(back_populates="answered_questions",
-                                                          foreign_keys=question_id)
+    question_id: Mapped[int] = mapped_column(ForeignKey("questions.id"))
+    question: Mapped["Question"] = relationship(back_populates="answered_questions",
+                                                foreign_keys=question_id)
 
-    answer_id: Mapped[Optional[int]] = mapped_column(ForeignKey("answer_options.id"))
-    answer: Mapped[Optional["AnswerOption"]] = relationship(back_populates="answered_questions",
-                                                            foreign_keys=answer_id)
+    answer_id: Mapped[int] = mapped_column(ForeignKey("answer_options.id"))
+    answer: Mapped["AnswerOption"] = relationship(back_populates="answered_questions",
+                                                  foreign_keys=answer_id)
 
-    user_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"))
-    user: Mapped[Optional["User"]] = relationship(back_populates="answered_questions",
-                                                  foreign_keys=user_id)
+    progress_quiz_id: Mapped[int] = mapped_column(ForeignKey("progress_quizzes.id"))
+    progress_quiz: Mapped["ProgressQuiz"] = relationship(back_populates="answered_questions",
+                                                         foreign_keys=progress_quiz_id)

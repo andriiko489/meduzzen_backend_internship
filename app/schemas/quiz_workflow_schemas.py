@@ -18,11 +18,11 @@ class ProgressQuiz(BaseModel):
 class BasicAnsweredQuestion(BaseModel):
     question_id: int
     answer_id: int
-    user_id: int
+    progress_quiz_id: int
 
 
 class AnsweredQuestion(BaseModel):
     id: Optional[int] = None
     question_id: int
     answer_id: int
-    user_id: int
+    progress_quiz_id: int
