@@ -6,6 +6,7 @@ from typing import Annotated
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 
+from crud.FinishedQuizCRUD import finished_quiz_crud
 from models import models
 from schemas import user_schemas, token_schemas
 from crud.UserCRUD import user_crud
@@ -87,3 +88,14 @@ async def login_for_access_token(
 @router.get("/me", response_model=user_schemas.User)
 async def get_me(current_user: user_schemas.User = Depends(Auth.get_current_user)):
     return current_user
+
+
+@router.get("/rate")
+async def get_rate(current_user: user_schemas.User = Depends(Auth.get_current_user)):
+    finished_quizzes = await finished_quiz_crud.get_by_user_id(current_user.id)
+    total_num_of_questions = 0
+    total_scores = 0
+    for quiz in finished_quizzes:
+        total_num_of_questions += quiz.num_of_questions
+        total_scores += quiz.num_of_correct_answers
+    return total_scores/total_num_of_questions
