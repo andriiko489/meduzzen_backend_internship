@@ -1,4 +1,5 @@
 from datetime import datetime
+from enum import Enum
 
 from fastapi import APIRouter, Depends, HTTPException
 
@@ -17,11 +18,23 @@ router = APIRouter(
 )
 
 
+class ExceptionResponses(Enum):
+    QUIZ_NOT_FOUND = "Quiz not found"
+    QUESTION_NOT_FOUND = "Question not found"
+    ANSWER_NOT_FOUND = "Answer not found"
+    HAVENT_ANSWER = "This question haven't this answer option"
+    HAVENT_QUESTION = "Started quiz haven't this question"
+    QUIZ_NOT_STARTED = "User dont start quiz yet"
+    SOMETHING_WRONG = "Something went wrong"
+    ALREADY_ANSWERED = "You already answered to this question"
+    CANNOT_SAVE = "Cannot save answer, unexpected error"
+
+
 @router.post("/start_quiz/")
 async def start_quiz(quiz_id: int, current_user: user_schemas.User = Depends(Auth.get_current_user)):
     quiz = await quiz_crud.get(quiz_id)
     if not quiz:
-        raise HTTPException(detail="Quiz not found", status_code=404)
+        raise HTTPException(detail=ExceptionResponses.QUIZ_NOT_FOUND.value, status_code=404)
     progress_quiz = quiz_workflow_schemas.ProgressQuiz(quiz_id=quiz_id, user_id=current_user.id)
     questions = await question_crud.get_by_quiz_id(quiz_id=quiz_id)
     if len(questions) < 2:
@@ -45,7 +58,7 @@ async def start_quiz(quiz_id: int, current_user: user_schemas.User = Depends(Aut
                                 status_code=403)
     db_progress_quiz = await progress_quiz_crud.add(progress_quiz)
     if not db_progress_quiz:
-        raise HTTPException(detail="Something went wrong", status_code=418)
+        raise HTTPException(detail=ExceptionResponses.SOMETHING_WRONG.value, status_code=418)
 
     return await quiz_crud.get(quiz_id)
 
@@ -55,32 +68,32 @@ async def answer(question_id: int, chosen_answer_id: int,
                  current_user: user_schemas.User = Depends(Auth.get_current_user)):
     question = await question_crud.get(question_id)
     if not question:
-        raise HTTPException(detail="Question not found", status_code=404)
+        raise HTTPException(detail=ExceptionResponses.QUESTION_NOT_FOUND.value, status_code=404)
     chosen_answer = await answer_option_crud.get(chosen_answer_id)
     if not chosen_answer:
-        raise HTTPException(detail="Answer not found", status_code=404)
+        raise HTTPException(detail=ExceptionResponses.QUIZ_NOT_FOUND.value, status_code=404)
 
     progress_quiz = await progress_quiz_crud.get_by_user_id(current_user.id)
     if not progress_quiz:
-        raise HTTPException(detail="User dont start quiz yet", status_code=404)
+        raise HTTPException(detail=ExceptionResponses.QUIZ_NOT_STARTED.value, status_code=404)
 
     questions = await question_crud.get_by_quiz_id(quiz_id=progress_quiz.quiz_id)
     if question not in questions:
-        raise HTTPException(detail="Started quiz haven't this question", status_code=404)
+        raise HTTPException(detail=ExceptionResponses.HAVENT_QUESTION.value, status_code=404)
     answered_options = await answer_option_crud.get_by_question_id(question_id=question_id)
     if not answer not in answered_options:
-        raise HTTPException(detail="This question haven't this answer option", status_code=404)
+        raise HTTPException(detail=ExceptionResponses.HAVENT_ANSWER.value, status_code=404)
 
     if await answered_question_crud.get_by_question_id_and_progress_quiz_id(question_id=question_id,
                                                                             progress_quiz_id=progress_quiz.id):
-        raise HTTPException(detail="You already answered to this question", status_code=409)
+        raise HTTPException(detail=ExceptionResponses.ALREADY_ANSWERED.value, status_code=409)
 
     answered_question = quiz_workflow_schemas.BasicAnsweredQuestion(question_id=question_id,
                                                                     answer_id=chosen_answer_id,
                                                                     progress_quiz_id=progress_quiz.id)
     db_answered_question = await answered_question_crud.add(answered_question)
     if not db_answered_question:
-        raise HTTPException(detail="Cannot save answer, unexpected error", status_code=408)
+        raise HTTPException(detail=ExceptionResponses.CANNOT_SAVE.value, status_code=408)
     return db_answered_question
 
 
@@ -88,7 +101,7 @@ async def answer(question_id: int, chosen_answer_id: int,
 async def finish_quiz(current_user: user_schemas.User = Depends(Auth.get_current_user)):
     progress_quiz = await progress_quiz_crud.get_by_user_id(current_user.id)
     if not progress_quiz:
-        raise HTTPException(detail="User dont start quiz yet", status_code=404)
+        raise HTTPException(detail=ExceptionResponses.QUIZ_NOT_STARTED.value, status_code=404)
     progress_quiz_id = progress_quiz.id
     all_questions = await question_crud.get_by_quiz_id(quiz_id=progress_quiz.quiz_id)
     user_answers = await answered_question_crud.get_by_progress_quiz_id(progress_quiz_id=progress_quiz.id)
@@ -101,7 +114,7 @@ async def finish_quiz(current_user: user_schemas.User = Depends(Auth.get_current
                                                             num_of_correct_answers=num_of_correct_answers,
                                                             user_id=current_user.id,
                                                             time=datetime.utcnow() - progress_quiz.started_at)
-    for answer in user_answers:
-        await answered_question_crud.delete(answer.id)
+    for user_answer in user_answers:
+        await answered_question_crud.delete(user_answer.id)
     await progress_quiz_crud.delete(progress_quiz_id)
     return await finished_quiz_crud.add(finished_quiz)
