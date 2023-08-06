@@ -19,4 +19,5 @@ class QuestionCRUD(BaseCRUD):
         items = (await self.session.execute(stmt)).scalars().all()
         return items
 
+
 question_crud = QuestionCRUD()
