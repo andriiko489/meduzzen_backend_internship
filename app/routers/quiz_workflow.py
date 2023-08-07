@@ -1,5 +1,4 @@
 from datetime import datetime
-from enum import Enum
 
 from fastapi import APIRouter, Depends, HTTPException
 
@@ -11,23 +10,12 @@ from crud.QuestionCRUD import question_crud
 from crud.QuizCRUD import quiz_crud
 from schemas import user_schemas, quiz_workflow_schemas
 from services.auth import Auth
+from utils.responses import ExceptionResponses
 
 router = APIRouter(
     prefix="/quiz_workflow",
     tags=["quiz_workflow"]
 )
-
-
-class ExceptionResponses(Enum):
-    QUIZ_NOT_FOUND = "Quiz not found"
-    QUESTION_NOT_FOUND = "Question not found"
-    ANSWER_NOT_FOUND = "Answer not found"
-    HAVENT_ANSWER = "This question haven't this answer option"
-    HAVENT_QUESTION = "Started quiz haven't this question"
-    QUIZ_NOT_STARTED = "User dont start quiz yet"
-    SOMETHING_WRONG = "Something went wrong"
-    ALREADY_ANSWERED = "You already answered to this question"
-    CANNOT_SAVE = "Cannot save answer, unexpected error"
 
 
 @router.post("/start_quiz/")

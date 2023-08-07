@@ -1,25 +1,14 @@
-from enum import Enum
-
 from fastapi import APIRouter, Depends, HTTPException
 
 from crud.QuizCRUD import quiz_crud
 from crud.UserCRUD import user_crud
 from schemas import user_schemas, quiz_schemas
 from services.auth import Auth
+from utils.responses import ExceptionResponses
 
 router = APIRouter(
     prefix="/quiz",
     tags=["quiz"])
-
-
-class ExceptionResponses(Enum):
-    COMPANY_NOT_FOUND = "Company not found"
-    QUIZ_NOT_FOUND = "Quiz not found"
-    QUESTION_NOT_FOUND = "Question not found"
-    ANSWER_OPTION_NOT_FOUND = "Answer option not found"
-    ONLY_ADMIN_OWNER = "Only admin and owner can do it"
-    QUIZ_MUST_HAVE_TWO_QUESTIONS = "Quiz must be have at least two questions"
-
 
 
 async def get_role(user_id: int, company_id: int):
@@ -27,7 +16,7 @@ async def get_role(user_id: int, company_id: int):
     if role is None:
         raise HTTPException(detail=ExceptionResponses.COMPANY_NOT_FOUND.value, status_code=404)
     if role.value < 2:
-        raise HTTPException(detail=ExceptionResponses.ONLY_ADMIN_OWNER.value, status_code=404)
+        raise HTTPException(detail=ExceptionResponses.ONLY_OWNER_ADMIN.value, status_code=404)
     return role
 
 
