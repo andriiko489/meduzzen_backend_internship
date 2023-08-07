@@ -8,12 +8,13 @@ from redis.commands.search.indexDefinition import IndexDefinition, IndexType
 import uuid
 
 from schemas import quiz_schemas
+from utils.config import settings
 
 nest_asyncio.apply()
 
 
 async def init_redis():
-    r = await redis.from_url("redis://redis:6379")
+    r = await redis.from_url(settings.redis_url)
     rs = r.ft("idx:users")
 
     schema = (
@@ -33,7 +34,7 @@ async def init_redis():
 
 
 async def add_result(result: quiz_schemas.RedisSchema):
-    r = await redis.from_url("redis://redis:6379")
+    r = await redis.from_url(settings.redis_url)
 
     next_id = await r.incr("result_id")
     await r.set(f"result:{next_id}", result.model_dump_json())
