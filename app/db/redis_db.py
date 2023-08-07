@@ -14,8 +14,8 @@ nest_asyncio.apply()
 
 
 async def init_redis():
-    r = await redis.from_url(settings.redis_url)
-    rs = r.ft("idx:users")
+    redis_db = await redis.from_url(settings.redis_url)
+    rs = redis_db.ft("idx:users")
 
     schema = (
         NumericField("$.user_id", as_name="user_id"),
@@ -34,15 +34,15 @@ async def init_redis():
 
 
 async def add_result(result: quiz_schemas.RedisSchema):
-    r = await redis.from_url(settings.redis_url)
+    redis_db = await redis.from_url(settings.redis_url)
 
-    next_id = await r.incr("result_id")
-    await r.set(f"result:{next_id}", result.model_dump_json())
+    next_id = await redis_db.incr("result_id")
+    await redis_db.set(f"result:{next_id}", result.model_dump_json())
 
-    await r.expire(f"result:{next_id}", 172800)
+    await redis_db.expire(f"result:{next_id}", 172800)
     # DAY = 48 hours = 48 * 60 minutes = 2880 minutes = 2880 * 60 seconds = 172800
 
-    return await r.get(f"result:{next_id}")
+    return await redis_db.get(f"result:{next_id}")
 
 
 asyncio.run(init_redis())
