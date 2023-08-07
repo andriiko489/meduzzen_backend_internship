@@ -8,7 +8,7 @@ pytest
 SQLAlchemy==2.0.19
 psycopg2
 asyncpg
-redis~=4.6.0
+redis
 nest-asyncio
 alembic
 passlib[bcrypt]
