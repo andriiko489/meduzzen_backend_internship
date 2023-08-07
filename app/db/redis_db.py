@@ -22,13 +22,15 @@ async def init_redis():
         NumericField("$.answer_id", as_name="answer_id"),
         NumericField("$.is_correct", as_name="is_correct")
     )
-
-    await rs.create_index(
-        schema,
-        definition=IndexDefinition(
-            prefix=["result:"], index_type=IndexType.JSON
+    try:
+        await rs.create_index(
+            schema,
+            definition=IndexDefinition(
+                prefix=["result:"], index_type=IndexType.JSON
+            )
         )
-    )
+    except:
+        print("Index already exist, skipping init")
 
 
 async def add_result(result: quiz_schemas.RedisSchema):
