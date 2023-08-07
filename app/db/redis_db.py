@@ -38,9 +38,7 @@ async def add_result(result: quiz_schemas.RedisSchema):
 
     next_id = await redis_db.incr("result_id")
     await redis_db.set(f"result:{next_id}", result.model_dump_json())
-
     await redis_db.expire(f"result:{next_id}", 172800)
-    # DAY = 48 hours = 48 * 60 minutes = 2880 minutes = 2880 * 60 seconds = 172800
 
     return await redis_db.get(f"result:{next_id}")
 
