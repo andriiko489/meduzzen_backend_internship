@@ -5,15 +5,12 @@ from pydantic import BaseModel
 
 
 class BasicProgressQuiz(BaseModel):
-    id: Optional[int] = None
     quiz_id: int
     user_id: int
 
 
-class ProgressQuiz(BaseModel):
+class ProgressQuiz(BasicProgressQuiz):
     id: Optional[int] = None
-    quiz_id: int
-    user_id: int
 
 
 class BasicAnsweredQuestion(BaseModel):
@@ -22,11 +19,8 @@ class BasicAnsweredQuestion(BaseModel):
     progress_quiz_id: int
 
 
-class AnsweredQuestion(BaseModel):
+class AnsweredQuestion(BasicAnsweredQuestion):
     id: Optional[int] = None
-    question_id: int
-    answer_id: int
-    progress_quiz_id: int
 
 
 class BasicFinishedQuiz(BaseModel):
