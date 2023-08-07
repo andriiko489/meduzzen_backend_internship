@@ -4,9 +4,9 @@ from crud.AnswerOptionCRUD import answer_option_crud
 from crud.QuestionCRUD import question_crud
 from crud.QuizCRUD import quiz_crud
 from routers import question
-from routers.quiz import ExceptionResponses
 from schemas import user_schemas, quiz_schemas
 from services.auth import Auth
+from utils.responses import ExceptionResponses
 
 router = APIRouter(
     prefix="/answer_option",

@@ -2,7 +2,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from routers import users, home, company, invitation, admin, quiz, question, answer_option
+from routers import users, home, company, invitation, admin, quiz, question, answer_option, quiz_workflow
 from utils.logger import logger
 from utils.config import settings
 
@@ -20,6 +20,7 @@ app.include_router(admin.router)
 app.include_router(quiz.router)
 app.include_router(question.router)
 app.include_router(answer_option.router)
+app.include_router(quiz_workflow.router)
 
 
 token_auth_scheme = HTTPBearer()
