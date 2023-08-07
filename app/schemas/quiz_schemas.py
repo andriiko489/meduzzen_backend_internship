@@ -81,3 +81,10 @@ class UpdateAnswerOption(BaseModel):
     id: Optional[int] = None
 
     text: str
+
+class RedisSchema(BaseModel):
+    user_id: int
+    company_id: int
+    quiz_id: int
+    answer_id: int
+    is_correct: int
