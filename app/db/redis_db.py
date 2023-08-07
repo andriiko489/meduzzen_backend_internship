@@ -5,8 +5,6 @@ import nest_asyncio
 from redis.commands.search.field import NumericField
 from redis.commands.search.indexDefinition import IndexDefinition, IndexType
 
-import uuid
-
 from schemas import quiz_schemas
 from utils.config import settings
 
