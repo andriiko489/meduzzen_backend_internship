@@ -13,7 +13,7 @@ nest_asyncio.apply()
 
 async def init_redis():
     redis_db = await redis.from_url(settings.redis_url)
-    rs = redis_db.ft("idx:users")
+    rs = redis_db.ft("idx:results")
 
     schema = (
         NumericField("$.user_id", as_name="user_id"),
