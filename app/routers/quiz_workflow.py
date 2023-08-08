@@ -8,7 +8,8 @@ from crud.FinishedQuizCRUD import finished_quiz_crud
 from crud.ProgressQuizCRUD import progress_quiz_crud
 from crud.QuestionCRUD import question_crud
 from crud.QuizCRUD import quiz_crud
-from schemas import user_schemas, quiz_workflow_schemas
+from db import redis_db
+from schemas import user_schemas, quiz_workflow_schemas, quiz_schemas
 from services.auth import Auth
 from utils.responses import ExceptionResponses
 
@@ -54,6 +55,7 @@ async def start_quiz(quiz_id: int, current_user: user_schemas.User = Depends(Aut
 @router.post("/answer/")
 async def answer(question_id: int, chosen_answer_id: int,
                  current_user: user_schemas.User = Depends(Auth.get_current_user)):
+    current_user_id = current_user.id
     question = await question_crud.get(question_id)
     if not question:
         raise HTTPException(detail=ExceptionResponses.QUESTION_NOT_FOUND.value, status_code=404)
@@ -64,10 +66,13 @@ async def answer(question_id: int, chosen_answer_id: int,
     progress_quiz = await progress_quiz_crud.get_by_user_id(current_user.id)
     if not progress_quiz:
         raise HTTPException(detail=ExceptionResponses.QUIZ_NOT_STARTED.value, status_code=404)
+    quiz_id = progress_quiz.quiz_id
 
     questions = await question_crud.get_by_quiz_id(quiz_id=progress_quiz.quiz_id)
     if question not in questions:
         raise HTTPException(detail=ExceptionResponses.HAVENT_QUESTION.value, status_code=404)
+    correct_answer_id = question.correct_answer_id
+
     answered_options = await answer_option_crud.get_by_question_id(question_id=question_id)
     if not answer not in answered_options:
         raise HTTPException(detail=ExceptionResponses.HAVENT_ANSWER.value, status_code=404)
@@ -82,6 +87,13 @@ async def answer(question_id: int, chosen_answer_id: int,
     db_answered_question = await answered_question_crud.add(answered_question)
     if not db_answered_question:
         raise HTTPException(detail=ExceptionResponses.CANNOT_SAVE.value, status_code=408)
+    quiz = await quiz_crud.get(quiz_id)
+    result = quiz_schemas.RedisSchema(user_id=current_user_id,
+                                      company_id=quiz.company_id,
+                                      quiz_id=quiz_id,
+                                      answer_id=chosen_answer_id,
+                                      is_correct=correct_answer_id == chosen_answer_id)
+    await redis_db.add_result(result)
     return db_answered_question
 
 

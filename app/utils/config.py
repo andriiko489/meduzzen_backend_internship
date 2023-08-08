@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=found_dotenv)
     host: str
     port: int
+    redis_url: str
     database_url: str
     test_database_url: str
     secret_key: str
