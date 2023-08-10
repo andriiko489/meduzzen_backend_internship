@@ -53,5 +53,11 @@ async def get_by_user_id(user_id: int):
     res = await index.search(Query(f'@user_id: [{user_id}, {user_id}]'))
     return res
 
+async def get_by_company_id(company_id: int):
+    await init_redis()
+    redis_db = await redis.from_url(settings.redis_url)
+    index = redis_db.ft("idx:results")
+    res = await index.search(Query(f'@company_id: [{company_id}, {company_id}]'))
+    return res
 
 asyncio.run(init_redis())

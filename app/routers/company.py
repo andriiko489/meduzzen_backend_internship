@@ -3,6 +3,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from crud.AdminCRUD import admin_crud
 from crud.CompanyCRUD import company_crud
 from crud.UserCRUD import user_crud
+from db import redis_db
 from schemas import company_schemas, user_schemas, basic_schemas
 from services.auth import Auth
 from utils.logger import logger
@@ -98,3 +99,13 @@ async def delete_company(company_id: int, current_user: user_schemas.User = Depe
         raise HTTPException(detail=ExceptionResponses.ONLY_OWNER.value, status_code=403)
     company = await company_crud.delete(company_id=company_id)
     return company
+
+@router.get("/get_company_recent_results")
+async def get_company_recent_results(company_id: int, current_user: user_schemas.User = Depends(Auth.get_current_user)):
+    company = await company_crud.get_company(company_id)
+    if not company:
+        HTTPException(detail=ExceptionResponses.COMPANY_NOT_FOUND.value, status_code=404)
+    role = await user_crud.get_role(user_id=current_user.id, company_id=company.id)
+    if role.value < 2:
+        raise HTTPException(detail=ExceptionResponses.ONLY_OWNER_ADMIN.value, status_code=403)
+    return await redis_db.get_by_company_id(company_id)
