@@ -16,3 +16,5 @@ python-multipart
 pyjwt[crypto]
 python-jose[cryptography]
 pytest-asyncio
+pandas
+pyarrow

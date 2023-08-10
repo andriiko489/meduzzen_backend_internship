@@ -1,3 +1,5 @@
+import io
+
 from fastapi import APIRouter
 
 from datetime import timedelta
@@ -5,6 +7,7 @@ from typing import Annotated
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.responses import StreamingResponse
 
 from crud.FinishedQuizCRUD import finished_quiz_crud
 from db import redis_db
@@ -102,3 +105,14 @@ async def get_rate(current_user: user_schemas.User = Depends(Auth.get_current_us
 @router.get("/recent_results")
 async def get_recent_results(current_user: user_schemas.User = Depends(Auth.get_current_user)):
     return await redis_db.get_by_user_id(current_user.id)
+
+
+@router.get("/get_csv_all_results", response_class=StreamingResponse)
+async def get_csv_all_results(current_user: user_schemas.User = Depends(Auth.get_current_user)):
+    df = await redis_db.get_csv_all()
+    stream = io.StringIO()
+    df.to_csv(stream, index=False)
+    response = StreamingResponse(
+        content=iter([stream.getvalue()]), media_type="application/octet-stream")
+    response.headers["Content-Disposition"] = "attachment; filename=export.csv"
+    return response

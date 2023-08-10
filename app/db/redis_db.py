@@ -1,6 +1,8 @@
 import asyncio
 import json
 
+import pandas as pd
+
 import redis.asyncio as redis
 import nest_asyncio
 from redis.commands.json.path import Path
@@ -68,5 +70,22 @@ async def get_by_company_id_user_id(user_id: int, company_id: int):
     index = redis_db.ft("idx:results")
     res = await index.search(Query(f'@company_id: [{company_id}, {company_id}] @user_id: [{user_id}, {user_id}]'))
     return res
+
+
+async def get_csv_all():
+    redis_db = await redis.from_url(settings.redis_url)
+    index = redis_db.ft("idx:results")
+    items = (await index.search(Query("*"))).docs
+    d = dict()
+    for item in items:
+        item = str(item)
+        item = eval(item[item.index("{"):])
+        js = eval(item["json"])
+        for key in js.keys():
+            if not d.get(key):
+                d[key] = []
+            d[key].append(js[key])
+    return pd.DataFrame.from_dict(d)
+
 
 asyncio.run(init_redis())
