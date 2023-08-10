@@ -100,6 +100,7 @@ async def delete_company(company_id: int, current_user: user_schemas.User = Depe
     company = await company_crud.delete(company_id=company_id)
     return company
 
+
 @router.get("/get_company_recent_results")
 async def get_company_recent_results(company_id: int, current_user: user_schemas.User = Depends(Auth.get_current_user)):
     company = await company_crud.get_company(company_id)
@@ -109,3 +110,19 @@ async def get_company_recent_results(company_id: int, current_user: user_schemas
     if role.value < 2:
         raise HTTPException(detail=ExceptionResponses.ONLY_OWNER_ADMIN.value, status_code=403)
     return await redis_db.get_by_company_id(company_id)
+
+
+@router.get("/get_user_recent_results")
+async def get_user_recent_results(user_id: int, current_user: user_schemas.User = Depends(Auth.get_current_user)):
+    user = await user_crud.get(user_id)
+    if not user:
+        raise HTTPException(detail=ExceptionResponses.USER_NOT_FOUND.value, status_code=404)
+    if not user.company_id:
+        raise HTTPException(detail=ExceptionResponses.USER_HAVENT_COMPANY.value, status_code=404)
+    if not current_user.company_id:
+        raise HTTPException(detail=ExceptionResponses.ONLY_OWNER_ADMIN.value, status_code=404)
+    user_role = await user_crud.get_role(user_id=user.id, company_id=user.company_id)
+    current_user_role = await user_crud.get_role(user_id=current_user.id, company_id=user.company_id)
+    if current_user_role.value < 2:
+        raise HTTPException(detail=ExceptionResponses.ONLY_OWNER_ADMIN.value, status_code=403)
+    return await redis_db.get_by_company_id_user_id(company_id=user.company_id, user_id=user_id)
