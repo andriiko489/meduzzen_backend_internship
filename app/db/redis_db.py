@@ -1,10 +1,12 @@
 import asyncio
+import json
 
 import redis.asyncio as redis
 import nest_asyncio
 from redis.commands.json.path import Path
 from redis.commands.search.field import NumericField
 from redis.commands.search.indexDefinition import IndexDefinition, IndexType
+from redis.commands.search.query import Query
 
 from schemas import quiz_schemas
 from utils.config import settings
@@ -38,7 +40,7 @@ async def add_result(result: quiz_schemas.RedisSchema):
     redis_db = await redis.from_url(settings.redis_url)
 
     next_id = await redis_db.incr("result_id")
-    await redis_db.json().set(f"result:{next_id}", Path.root_path(), result.model_dump_json())
+    await redis_db.json().set(f"result:{next_id}", Path.root_path(), json.loads(result.model_dump_json()))
     await redis_db.expire(f"result:{next_id}", 172800)
 
     return await redis_db.json().get(f"result:{next_id}")
@@ -48,7 +50,7 @@ async def get_by_user_id(user_id: int):
     await init_redis()
     redis_db = await redis.from_url(settings.redis_url)
     index = redis_db.ft("idx:results")
-    res = await index.search(Query('*'))
+    res = await index.search(Query(f'@user_id: [{user_id}, {user_id}]'))
     return res
 
 

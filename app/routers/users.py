@@ -7,6 +7,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 
 from crud.FinishedQuizCRUD import finished_quiz_crud
+from db import redis_db
 from models import models
 from schemas import user_schemas, token_schemas
 from crud.UserCRUD import user_crud
@@ -96,3 +97,8 @@ async def get_rate(current_user: user_schemas.User = Depends(Auth.get_current_us
     total_num_of_questions = sum(quiz.num_of_questions for quiz in finished_quizzes)
     total_scores = sum(quiz.num_of_correct_answers for quiz in finished_quizzes)
     return total_scores / total_num_of_questions if total_num_of_questions > 0 else 0
+
+
+@router.get("/recent_results")
+async def get_recent_results(current_user: user_schemas.User = Depends(Auth.get_current_user)):
+    return await redis_db.get_by_user_id(current_user.id)
