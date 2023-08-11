@@ -76,16 +76,14 @@ async def get_csv_all():
     redis_db = await redis.from_url(settings.redis_url)
     index = redis_db.ft("idx:results")
     items = (await index.search(Query("*"))).docs
-    d = dict()
+    dfs = []
+
     for item in items:
-        item = str(item)
-        item = eval(item[item.index("{"):])
-        js = eval(item["json"])
-        for key in js.keys():
-            if not d.get(key):
-                d[key] = []
-            d[key].append(js[key])
-    return pd.DataFrame.from_dict(d)
+        js = json.loads(item.json)
+        df = pd.DataFrame.from_dict(js, orient='index').T
+        dfs.append(df)
+
+    return pd.concat(dfs, ignore_index=True)
 
 
 asyncio.run(init_redis())
