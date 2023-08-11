@@ -17,4 +17,5 @@ class FinishedQuizCRUD(BaseCRUD):
         return items
 
 
+
 finished_quiz_crud = FinishedQuizCRUD()
