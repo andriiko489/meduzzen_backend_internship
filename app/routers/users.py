@@ -1,4 +1,5 @@
 import io
+from enum import Enum
 
 from fastapi import APIRouter
 
@@ -21,6 +22,10 @@ from utils.config import settings
 router = APIRouter(
     prefix="/users",
     tags=["users"])
+
+
+class Headers(Enum):
+    streaming_response = "attachment; filename=export.csv"
 
 
 @router.get("/all/")
@@ -114,5 +119,5 @@ async def get_csv_all_results(current_user: user_schemas.User = Depends(Auth.get
     df.to_csv(stream, index=False)
     response = StreamingResponse(
         content=iter([stream.getvalue()]), media_type="application/octet-stream")
-    response.headers["Content-Disposition"] = "attachment; filename=export.csv"
+    response.headers["Content-Disposition"] = Headers.streaming_response.value
     return response
