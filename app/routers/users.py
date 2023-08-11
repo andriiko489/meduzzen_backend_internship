@@ -1,3 +1,5 @@
+from enum import Enum
+
 from fastapi import APIRouter
 
 from datetime import timedelta
@@ -5,8 +7,10 @@ from typing import Annotated
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.responses import StreamingResponse
 
 from crud.FinishedQuizCRUD import finished_quiz_crud
+from db import redis_db
 from models import models
 from schemas import user_schemas, token_schemas
 from crud.UserCRUD import user_crud
@@ -17,6 +21,10 @@ from utils.config import settings
 router = APIRouter(
     prefix="/users",
     tags=["users"])
+
+
+class Headers(Enum):
+    streaming_response = "attachment; filename=export.csv"
 
 
 @router.get("/all/")
@@ -96,3 +104,17 @@ async def get_rate(current_user: user_schemas.User = Depends(Auth.get_current_us
     total_num_of_questions = sum(quiz.num_of_questions for quiz in finished_quizzes)
     total_scores = sum(quiz.num_of_correct_answers for quiz in finished_quizzes)
     return total_scores / total_num_of_questions if total_num_of_questions > 0 else 0
+
+
+@router.get("/recent_results")
+async def get_recent_results(current_user: user_schemas.User = Depends(Auth.get_current_user)):
+    return await redis_db.get_by_user_id(current_user.id)
+
+
+@router.get("/get_csv_all_results", response_class=StreamingResponse)
+async def get_csv_all_results(current_user: user_schemas.User = Depends(Auth.get_current_user)):
+    df = await redis_db.get_csv_all()
+    response = StreamingResponse(
+        content=iter([df.to_csv(index=False)]), media_type="application/octet-stream")
+    response.headers["Content-Disposition"] = Headers.streaming_response.value
+    return response

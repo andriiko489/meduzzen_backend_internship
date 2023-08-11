@@ -2,6 +2,7 @@ from enum import Enum
 
 
 class ExceptionResponses(Enum):
+    USER_NOT_FOUND = "User not found"
     COMPANY_NOT_FOUND = "Company not found"
     QUIZ_NOT_FOUND = "Quiz not found"
     QUESTION_NOT_FOUND = "Question not found"
@@ -12,6 +13,7 @@ class ExceptionResponses(Enum):
     ONLY_OWNER = "Only owner can do it"
     NOT_MEMBER = "This user are not member of this company"
     KICKED_TOO_HIGH = "Kicked user have too high role"
+    USER_HAVENT_COMPANY = "User havent company"
 
     HAVENT_ANSWER = "This question haven't this answer option"
     HAVENT_QUESTION = "Started quiz haven't this question"
