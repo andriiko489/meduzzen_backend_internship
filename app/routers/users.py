@@ -1,4 +1,3 @@
-import io
 from enum import Enum
 
 from fastapi import APIRouter
@@ -115,9 +114,7 @@ async def get_recent_results(current_user: user_schemas.User = Depends(Auth.get_
 @router.get("/get_csv_all_results", response_class=StreamingResponse)
 async def get_csv_all_results(current_user: user_schemas.User = Depends(Auth.get_current_user)):
     df = await redis_db.get_csv_all()
-    stream = io.StringIO()
-    df.to_csv(stream, index=False)
     response = StreamingResponse(
-        content=iter([stream.getvalue()]), media_type="application/octet-stream")
+        content=iter([df.to_csv(index=False)]), media_type="application/octet-stream")
     response.headers["Content-Disposition"] = Headers.streaming_response.value
     return response
