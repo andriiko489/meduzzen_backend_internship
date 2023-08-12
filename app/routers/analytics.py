@@ -24,7 +24,7 @@ async def get_rate(current_user: user_schemas.User = Depends(Auth.get_current_us
 
 
 @router.get("/get_results_by_quizzes")
-async def get_results_by_quizzes(current_user: user_schemas.User = Depends(Auth.get_current_user)):
+async def get_results_grouped_by_quizzes(current_user: user_schemas.User = Depends(Auth.get_current_user)):
     finished_quizzes = await finished_quiz_crud.get_by_user_id(user_id=current_user.id)
     grouped_quizzes = defaultdict(list)
     for finished_quiz in finished_quizzes:
@@ -63,3 +63,15 @@ async def get_company_members_results(company_id: int,
                             "total_time": datetime.timedelta(seconds=total_time),
                             "rate": rate}
     return result
+
+
+@router.get("/get_member_results")
+async def get_member_results(user_id: int, current_user: user_schemas.User = Depends(Auth.get_current_user)):
+    current_user_role = await user_crud.get_role(user_id=current_user.id, company_id=current_user.company_id)
+    if not current_user_role.value or current_user_role.value < 2:
+        raise HTTPException(detail=ExceptionResponses.ONLY_OWNER_ADMIN.value, status_code=403)
+    user_role = await user_crud.get_role(user_id=user_id, company_id=current_user.company_id)
+    if not user_role.value or user_role.value < 1:
+        raise HTTPException(detail=ExceptionResponses.NOT_MEMBER.value, status_code=403)
+    user = await user_crud.get_user(user_id)
+    return await get_results_grouped_by_quizzes(user)
