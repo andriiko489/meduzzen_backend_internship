@@ -205,5 +205,5 @@ class FinishedQuiz(Base):
     quiz_id: Mapped[Optional[int]] = mapped_column(ForeignKey("quizzes.id"))
     quiz: Mapped[Optional["Quiz"]] = relationship(back_populates="finished_quizzes",
                                                   foreign_keys=quiz_id)
-
+    finished_at = Column(TIMESTAMP, default=datetime.datetime.utcnow)
     time = Column(Interval)
