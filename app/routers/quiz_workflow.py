@@ -113,7 +113,8 @@ async def finish_quiz(current_user: user_schemas.User = Depends(Auth.get_current
     finished_quiz = quiz_workflow_schemas.BasicFinishedQuiz(num_of_questions=len(all_questions),
                                                             num_of_correct_answers=num_of_correct_answers,
                                                             user_id=current_user.id,
-                                                            time=datetime.utcnow() - progress_quiz.started_at)
+                                                            time=datetime.utcnow() - progress_quiz.started_at,
+                                                            quiz_id=progress_quiz.quiz_id)
     for user_answer in user_answers:
         await answered_question_crud.delete(user_answer.id)
     await progress_quiz_crud.delete(progress_quiz_id)

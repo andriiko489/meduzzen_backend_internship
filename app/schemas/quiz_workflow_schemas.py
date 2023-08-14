@@ -30,3 +30,4 @@ class BasicFinishedQuiz(BaseModel):
     num_of_correct_answers: int
     user_id: int
     time: datetime.timedelta
+    quiz_id: int

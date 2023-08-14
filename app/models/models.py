@@ -115,6 +115,10 @@ class Quiz(Base):
                                                                             foreign_keys="ProgressQuiz.quiz_id",
                                                                             lazy="selectin")
 
+    finished_quizzes: Mapped[Optional[List["FinishedQuiz"]]] = relationship(back_populates="quiz",
+                                                                            foreign_keys="FinishedQuiz.quiz_id",
+                                                                            lazy="selectin")
+
 
 class Question(Base):
     __tablename__ = "questions"
@@ -198,4 +202,8 @@ class FinishedQuiz(Base):
     user: Mapped["User"] = relationship(back_populates="finished_quizzes",
                                         foreign_keys=user_id)
 
+    quiz_id: Mapped[Optional[int]] = mapped_column(ForeignKey("quizzes.id"))
+    quiz: Mapped[Optional["Quiz"]] = relationship(back_populates="finished_quizzes",
+                                                  foreign_keys=quiz_id)
+    finished_at = Column(TIMESTAMP, default=datetime.datetime.utcnow)
     time = Column(Interval)

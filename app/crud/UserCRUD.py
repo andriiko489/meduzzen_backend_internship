@@ -72,6 +72,8 @@ class UserCRUD(BaseCRUD):
     async def get_role(self, user_id: int, company_id: int):
         company_crud = CompanyCRUD(self.session)
         user_crud = UserCRUD(self.session)
+        if not company_id:
+            return None
         company = await company_crud.get_company(company_id)
         user = await user_crud.get_user(user_id)
         if not company:
